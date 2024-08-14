@@ -1,0 +1,8 @@
+
+A WIP haskell mode that requires treesitter and offers syntax highlighting and imenu, and a comint mode.
+
+* TODO
+- Indentation
+- Autoloading
+- Syntax table
+- Fix treesit-font-lock-feature-list
