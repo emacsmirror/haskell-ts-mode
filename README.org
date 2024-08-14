@@ -6,3 +6,4 @@ A WIP haskell mode that requires treesitter and offers syntax highlighting and i
 - Autoloading
 - Syntax table
 - Fix treesit-font-lock-feature-list
+- Comment problem
