@@ -3,7 +3,7 @@
 (require 'comint)
 (declare-function treesit-parser-create "treesit.c")
 
-(setq haskell-ts-mode--treesit-font-lock-settings
+(setq haskell-ts-font-lock
 	  (treesit-font-lock-rules
 	   :language 'haskell
 	   :feature 'keyword
