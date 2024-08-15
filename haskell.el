@@ -3,6 +3,7 @@
 (require 'comint)
 (declare-function treesit-parser-create "treesit.c")
 
+;; TODO change to defvar
 (setq haskell-ts-font-lock
 	  (treesit-font-lock-rules
 	   :language 'haskell
