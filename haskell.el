@@ -8,7 +8,7 @@
 	   :language 'haskell
 	   :feature 'keyword
 	   `(["module" "import" "data" "let" "where" "case"
-		  "if" "then" "else" "of" "do" "in" ]
+		  "if" "then" "else" "of" "do" "in" "instance"]
 		 @font-lock-keyword-face)
 	   :language 'haskell
 	   :feature 'type
@@ -27,8 +27,7 @@
 		 (lambda (patterns (variable) @font-lock-variable-name-face)))
 	   :language 'haskell
 	   :feature 'match
-	   `((match ("|" @font-lock-doc-face))
-		 (match  ("=" @font-lock-doc-face))
+	   `((match ("|" @font-lock-doc-face) ("=" @font-lock-doc-face))
 		 (match ("->" @font-lock-doc-face)))
 	   :language 'haskell
 	   :feature 'comment
