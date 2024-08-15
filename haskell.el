@@ -39,6 +39,13 @@
 	   :feature 'str
 	   `((char) @font-lock-string-face
 		 (string) @font-lock-string-face)))
+
+;; TODO change to defvar
+(setq haskell-ts-indent-rules
+	  `((haskell
+		 ((node-is "comment") no-indent 0))))
+
+
 ;;;###autoload
 (define-derived-mode haskell-ts-mode prog-mode "haskell ts mode"
   "Major mode for Haskell files using tree-sitter"
@@ -47,6 +54,8 @@
 	(error "Tree-sitter for Haskell is not available"))
   (treesit-parser-create 'haskell)
   (setq-local treesit-defun-type-regexp "\\(?:\\(?:function\\|struct\\)_definition\\)")
+  ;; Indent 
+  (setq-local treesit-simple-indent-rules haskell-ts-indent-rules)
   ;; Misc
   (setq-local comment-start "--")
   (setq-local indent-tabs-mode nil)
