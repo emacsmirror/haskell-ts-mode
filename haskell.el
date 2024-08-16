@@ -9,7 +9,8 @@
 	   :feature 'keyword
 	   `(["module" "import" "data" "let" "where" "case"
 		  "if" "then" "else" "of" "do" "in" "instance"]
-		 @font-lock-keyword-face)
+		  @font-lock-keyword-face
+		 ["(" ")" "[" "]"] @font-lock-operator-face)
 	   :language 'haskell
 	   :feature 'type
 	   `((type) @font-lock-type-face
@@ -43,12 +44,49 @@
 ;; TODO change to defvar
 (setq haskell-ts-indent-rules
 	  `((haskell
-		 ((node-is "comment") no-indent 0))))
+		 ((node-is "comment") column-0 0)
+		 ((parent-is "haskell") column-0 0)
+		 ((parent-is "declarations") column-0 0)
+		 ((parent-is "imports") column-0 0)
+		 ((parent-is "local_binds") prev-sibling 0)
+		 ((parent-is "apply") parent 2)
+		 ;; Match
+		 ((match "match" nil nil 2 2) parent 2)
+		 ((node-is "match") prev-sibling 0)
+		 ;; Do Hg
+		 ((parent-is "do") prev-sibling 0)
+		 ((match nil "do" nil 1 1) great-grand-parent 2)
+		 ((node-is "alternatives") grand-parent 0)
+		 ((parent-is "alternatives") grand-parent 2)
+
+		 ;; Infix
+		 ((node-is "infix") grand-parent 2)
+		 ((parent-is "infix") parent 0)
+		 ;; Where PS  TODO 2nd
+		 
+		 ((lambda (node parent bol)
+			(string= "where" (treesit-node-type (treesit-node-prev-sibling node))))
+		  (lambda (a b c)
+		   (+ 1 (treesit-node-start (treesit-node-prev-sibling b))))
+		  3)
+		 ((parent-is "local_binds") prev-sibling 2)
+		 ((node-is "^where$") parent 2)
+		 ;; If statement
+		 ((node-is "then") parent 2)
+		 ((node-is "else") parent 2)
+
+		 ;; lists
+		 ((node-is "^in$") parent 2)
+		 ((lambda (a b c)
+			(save-excursion
+			  (goto-char c)
+			  (re-search-forward "^[ \t]*$" (line-end-position) t)))
+		  prev-adaptive-prefix 0))))
 
 
 ;;;###autoload
 (define-derived-mode haskell-ts-mode prog-mode "haskell ts mode"
-  "Major mode for Haskell files using tree-sitter"
+  "Mjaor mode for Haskell files using tree-sitter"
   :group 'haskell
   (unless (treesit-ready-p 'haskell)
 	(error "Tree-sitter for Haskell is not available"))
@@ -115,4 +153,4 @@
 (define-key haskell-ts-mode-map (kbd "C-c c") 'haskell-compile-region-and-go)
 (define-key haskell-ts-mode-map (kbd "C-c r") 'run-haskell)
 
-(add-to-list ' auto-mode-alist '("\\.hs\\'" . haskell-ts-mode))
+;; (add-to-list 'auto-mode-alist '("\\.hs\\'" . haskell-ts-mode))

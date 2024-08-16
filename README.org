@@ -7,3 +7,4 @@ A WIP haskell mode that requires treesitter and offers syntax highlighting and i
 - Syntax table
 - Fix treesit-font-lock-feature-list
 - Comment problem
+- Better imenu supprt
