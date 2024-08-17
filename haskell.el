@@ -46,27 +46,28 @@
 (setq haskell-ts-indent-rules
       `((haskell
 	 ((node-is "comment") column-0 0)
-	 ((parent-is "haskell") column-0 0)
-	 ((parent-is "declarations") column-0 0)
 	 ((parent-is "imports") column-0 0)
 
 	 ;; If then else
 	 ((node-is "then") parent 2)
 	 ((node-is "^else$") parent 2)
 
-	 ;; lists
 	 ((node-is "^in$") parent 2)
  
 	 ((parent-is "apply") parent 2)
+	 
 	 ;; Match
 	 ((match "match" nil nil 2 2) parent 2)
 	 ((node-is "match") prev-sibling 0)
+	 ((parent-is "match") grand-parent 2)
+
+	 
 	 ;; Do Hg
 	 ((lambda (node parent bol)
 	    (string= "do" (treesit-node-type (treesit-node-prev-sibling node))))
 	  grand-parent 0)
 	 ((parent-is "do") prev-sibling 0)
-	 
+
 	 ((node-is "alternatives") grand-parent 0)
 	 ((parent-is "alternatives") grand-parent 2)
 
@@ -75,7 +76,7 @@
 	 ((parent-is "infix") parent 0)
 
 	 ((parent-is "data_constructors") parent 0)
-	 
+
 	 ;; where
 	 ((lambda (node parent bol)
 	    (string= "where" (treesit-node-type (treesit-node-prev-sibling node))))
@@ -85,13 +86,10 @@
 	 ((parent-is "local_binds") prev-sibling 0)
 	 ((node-is "^where$") parent 2)
 
-	 ;; Backup
-	 ((lambda (a b c)
-	    (save-excursion
-	      (goto-char c)
-	      (message "ee")
-	      (re-search-forward "^[ \t]*$" (line-end-position) t)))
-	  prev-adaptive-prefix 0))))
+	 (no-node prev-adaptive-prefix 0)
+	 ((parent-is "haskell") column-0 0)
+	 ((parent-is "declarations") column-0 0)
+	 )))
 
 
 ;;;###autoload
@@ -163,4 +161,4 @@
 (define-key haskell-ts-mode-map (kbd "C-c c") 'haskell-compile-region-and-go)
 (define-key haskell-ts-mode-map (kbd "C-c r") 'run-haskell)
 
-(add-to-list 'auto-mode-alist '("\\.hs\\'" . haskell-ts-mode))
+;; (add-to-list 'auto-mode-alist '("\\.hs\\'" . haskell-ts-mode))
