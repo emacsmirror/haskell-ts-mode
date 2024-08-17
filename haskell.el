@@ -5,84 +5,93 @@
 
 ;; TODO change to defvar
 (setq haskell-ts-font-lock
-	  (treesit-font-lock-rules
-	   :language 'haskell
-	   :feature 'keyword
-	   `(["module" "import" "data" "let" "where" "case"
-		  "if" "then" "else" "of" "do" "in" "instance"]
-		  @font-lock-keyword-face
-		 ["(" ")" "[" "]"] @font-lock-operator-face)
-	   :language 'haskell
-	   :feature 'type
-	   `((type) @font-lock-type-face
-		 (constructor) @font-lock-type-face)
-	   :language 'haskell
-	   :feature 'function
-	   `((function (variable) @font-lock-function-name-face)
-		 (function (infix (operator)  @font-lock-function-name-face))
-		 (bind (variable) @font-lock-function-name-face)
-		 (function (infix (infix_id (variable) @font-lock-function-name-face))))
-	   :language 'haskell
-	   :feature 'args
-	   `((function (patterns) @font-lock-variable-name-face)
-		 (function (infix (variable)  @font-lock-variable-name-face))
-		 (lambda (patterns (variable) @font-lock-variable-name-face)))
-	   :language 'haskell
-	   :feature 'match
-	   `((match ("|" @font-lock-doc-face) ("=" @font-lock-doc-face))
-		 (match ("->" @font-lock-doc-face)))
-	   :language 'haskell
-	   :feature 'comment
-	   `(((comment) @font-lock-comment-face))
-	   :language 'haskell
-	   :feature 'pragma
-	   `((pragma) @font-lock-preprocessor-face)
-	   :language 'haskell
-	   :feature 'str
-	   `((char) @font-lock-string-face
-		 (string) @font-lock-string-face)))
+      (treesit-font-lock-rules
+       :language 'haskell
+       :feature 'keyword
+       `(["module" "import" "data" "let" "where" "case"
+	  "if" "then" "else" "of" "do" "in" "instance"]
+	 @font-lock-keyword-face
+	 ["(" ")" "[" "]"] @font-lock-operator-face)
+       :language 'haskell
+       :feature 'type
+       `((type) @font-lock-type-face
+	 (constructor) @font-lock-type-face)
+       :language 'haskell
+       :feature 'function
+       `((function (variable) @font-lock-function-name-face)
+	 (function (infix (operator)  @font-lock-function-name-face))
+	 (bind (variable) @font-lock-function-name-face)
+	 (function (infix (infix_id (variable) @font-lock-function-name-face))))
+       :language 'haskell
+       :feature 'args
+       `((function (patterns) @font-lock-variable-name-face)
+	 (function (infix (variable)  @font-lock-variable-name-face))
+	 (lambda (patterns (variable) @font-lock-variable-name-face)))
+       :language 'haskell
+       :feature 'match
+       `((match ("|" @font-lock-doc-face) ("=" @font-lock-doc-face))
+	 (match ("->" @font-lock-doc-face)))
+       :language 'haskell
+       :feature 'comment
+       `(((comment) @font-lock-comment-face))
+       :language 'haskell
+       :feature 'pragma
+       `((pragma) @font-lock-preprocessor-face)
+       :language 'haskell
+       :feature 'str
+       `((char) @font-lock-string-face
+	 (string) @font-lock-string-face)))
 
 ;; TODO change to defvar
 (setq haskell-ts-indent-rules
-	  `((haskell
-		 ((node-is "comment") column-0 0)
-		 ((parent-is "haskell") column-0 0)
-		 ((parent-is "declarations") column-0 0)
-		 ((parent-is "imports") column-0 0)
-		 ((parent-is "local_binds") prev-sibling 0)
-		 ((parent-is "apply") parent 2)
-		 ;; Match
-		 ((match "match" nil nil 2 2) parent 2)
-		 ((node-is "match") prev-sibling 0)
-		 ;; Do Hg
-		 ((parent-is "do") prev-sibling 0)
-		 ((match nil "do" nil 1 1) great-grand-parent 2)
-		 ((node-is "alternatives") grand-parent 0)
-		 ((parent-is "alternatives") grand-parent 2)
+      `((haskell
+	 ((node-is "comment") column-0 0)
+	 ((parent-is "haskell") column-0 0)
+	 ((parent-is "declarations") column-0 0)
+	 ((parent-is "imports") column-0 0)
 
-		 ;; Infix
-		 ((node-is "infix") grand-parent 2)
-		 ((parent-is "infix") parent 0)
-		 ;; Where PS  TODO 2nd
-		 
-		 ((lambda (node parent bol)
-			(string= "where" (treesit-node-type (treesit-node-prev-sibling node))))
-		  (lambda (a b c)
-		   (+ 1 (treesit-node-start (treesit-node-prev-sibling b))))
-		  3)
-		 ((parent-is "local_binds") prev-sibling 2)
-		 ((node-is "^where$") parent 2)
-		 ;; If statement
-		 ((node-is "then") parent 2)
-		 ((node-is "else") parent 2)
+	 ;; If then else
+	 ((node-is "then") parent 2)
+	 ((node-is "^else$") parent 2)
 
-		 ;; lists
-		 ((node-is "^in$") parent 2)
-		 ((lambda (a b c)
-			(save-excursion
-			  (goto-char c)
-			  (re-search-forward "^[ \t]*$" (line-end-position) t)))
-		  prev-adaptive-prefix 0))))
+	 ;; lists
+	 ((node-is "^in$") parent 2)
+ 
+	 ((parent-is "apply") parent 2)
+	 ;; Match
+	 ((match "match" nil nil 2 2) parent 2)
+	 ((node-is "match") prev-sibling 0)
+	 ;; Do Hg
+	 ((lambda (node parent bol)
+	    (string= "do" (treesit-node-type (treesit-node-prev-sibling node))))
+	  grand-parent 0)
+	 ((parent-is "do") prev-sibling 0)
+	 
+	 ((node-is "alternatives") grand-parent 0)
+	 ((parent-is "alternatives") grand-parent 2)
+
+	 ;; Infix
+	 ((node-is "infix") grand-parent 2)
+	 ((parent-is "infix") parent 0)
+
+	 ((parent-is "data_constructors") parent 0)
+	 
+	 ;; where
+	 ((lambda (node parent bol)
+	    (string= "where" (treesit-node-type (treesit-node-prev-sibling node))))
+	  (lambda (a b c)
+	    (+ 1 (treesit-node-start (treesit-node-prev-sibling b))))
+	  3)
+	 ((parent-is "local_binds") prev-sibling 0)
+	 ((node-is "^where$") parent 2)
+
+	 ;; Backup
+	 ((lambda (a b c)
+	    (save-excursion
+	      (goto-char c)
+	      (message "ee")
+	      (re-search-forward "^[ \t]*$" (line-end-position) t)))
+	  prev-adaptive-prefix 0))))
 
 
 ;;;###autoload
@@ -90,7 +99,7 @@
   "Mjaor mode for Haskell files using tree-sitter"
   :group 'haskell
   (unless (treesit-ready-p 'haskell)
-	(error "Tree-sitter for Haskell is not available"))
+    (error "Tree-sitter for Haskell is not available"))
   (treesit-parser-create 'haskell)
   (setq-local treesit-defun-type-regexp "\\(?:\\(?:function\\|struct\\)_definition\\)")
   ;; Indent 
@@ -99,38 +108,38 @@
   (setq-local comment-start "--")
   (setq-local indent-tabs-mode nil)
   (setq-local electric-pair-pairs
-			  (list (cons ?` ?`) (cons ?( ?)) (cons ?{ ?}) (cons ?' ?') (cons ?" ?")))
+	      (list (cons ?` ?`) (cons ?( ?)) (cons ?{ ?}) (cons ?' ?') (cons ?" ?")))
   (setq-local treesit-defun-name-function 'haskell-ts-defun-name)
   (setq-local treesit-defun-type-regexp "function")
   ;; Imenu
   (setq-local treesit-simple-imenu-settings
-			  `((nil haskell-ts-imenu-func-node-p nil haskell-ts-imenu-name-function)
-				("Signatures.." haskell-ts-imenu-sig-node-p nil haskell-ts-imenu-sig-name-function)))
+	      `((nil haskell-ts-imenu-func-node-p nil haskell-ts-imenu-name-function)
+		("Signatures.." haskell-ts-imenu-sig-node-p nil haskell-ts-imenu-sig-name-function)))
   ;; font-lock.
   (setq-local treesit-font-lock-settings haskell-ts-font-lock)
   (setq-local treesit-font-lock-feature-list
-			  '(( comment  str pragma type keyword definition function args match)))
+	      '(( comment  str pragma type keyword definition function args match)))
   (treesit-major-mode-setup))
 
 (defun haskell-ts-imenu-func-node-p (node)
   (and (string-match-p "function\\|bind" (treesit-node-type node))
-	   (string= (treesit-node-type (treesit-node-parent node)) "declarations")))
+       (string= (treesit-node-type (treesit-node-parent node)) "declarations")))
 
 (defun haskell-ts-imenu-sig-node-p (node)
   (and (string-match-p "signature" (treesit-node-type node))
-	   (string= (treesit-node-type (treesit-node-parent node)) "declarations")))
+       (string= (treesit-node-type (treesit-node-parent node)) "declarations")))
 
 (defun haskell-ts-imenu-sig-name-function (node)
   (let ((name (treesit-node-text node)))
-	(if (haskell-ts-imenu-sig-node-p node)
-		(haskell-ts-defun-name node)
-	  nil)))
+    (if (haskell-ts-imenu-sig-node-p node)
+	(haskell-ts-defun-name node)
+      nil)))
 
 (defun haskell-ts-imenu-name-function (node)
   (let ((name (treesit-node-text node)))
-	(if (haskell-ts-imenu-func-node-p node)
-		(haskell-ts-defun-name node)
-	  nil)))
+    (if (haskell-ts-imenu-func-node-p node)
+	(haskell-ts-defun-name node)
+      nil)))
 
 (defun haskell-ts-defun-name (node)
   (treesit-node-text (treesit-node-child node 0)))
@@ -144,8 +153,8 @@
 (defun run-haskell()
   (interactive)
   (when (not (comint-check-proc "*haskell*"))
-	(set-buffer (apply (function make-comint)
-					   "haskell" "ghci" nil `(,buffer-file-name))))
+    (set-buffer (apply (function make-comint)
+		       "haskell" "ghci" nil `(,buffer-file-name))))
   (pop-to-buffer-same-window "*haskell*"))
 
 (defun haskellsession ()
