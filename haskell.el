@@ -161,4 +161,4 @@
 (define-key haskell-ts-mode-map (kbd "C-c c") 'haskell-compile-region-and-go)
 (define-key haskell-ts-mode-map (kbd "C-c r") 'run-haskell)
 
-;; (add-to-list 'auto-mode-alist '("\\.hs\\'" . haskell-ts-mode))
+(add-to-list 'auto-mode-alist '("\\.hs\\'" . haskell-ts-mode))
