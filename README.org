@@ -4,3 +4,10 @@ A haskell mode that requires treesitter and offers:
 - Indentation
 - Imenu support
 - REPL
+
+* Installation
+
+#+BEGIN_SRC: elisp
+(add-to-list 'load-path "path/to/haskell-ts-mode")
+(require 'haskell-ts-mode)
+#+END_SRC
