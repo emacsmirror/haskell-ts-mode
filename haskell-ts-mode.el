@@ -82,6 +82,10 @@
 	 ((node-is "comment") column-0 0)
 	 ((parent-is "imports") column-0 0)
 
+	 ;; Infix
+	 ((parent-is "infix") parent 0)
+	 ((node-is "infix") grand-parent 2)
+	 
 	 ;; list
 	 ((node-is "]") parent 0)
 	 ((parent-is "list") parent 1)
@@ -92,7 +96,7 @@
 
 	 ((node-is "^in$") parent 2)
  
-	 ((parent-is "apply") parent 2)
+	 ((parent-is "apply") parent -1)
 	 
 	 ;; Match
 	 ((match "match" nil nil 2 2) parent 2)
@@ -108,10 +112,8 @@
 	 ((node-is "alternatives") grand-parent 0)
 	 ((parent-is "alternatives") grand-parent 2)
 
-	 ;; Infix
-	 ((node-is "infix") grand-parent 2)
-	 ((parent-is "infix") parent 0)
-
+	 (no-node prev-adaptive-prefix 0)
+	 
 	 ((parent-is "data_constructors") parent 0)
 
 	 ;; where
@@ -123,7 +125,6 @@
 	 ((parent-is "local_binds") prev-sibling 0)
 	 ((node-is "^where$") parent 2)
 
-	 (no-node prev-adaptive-prefix 0)
 	 ((parent-is "haskell") column-0 0)
 	 ((parent-is "declarations") column-0 0)
 
@@ -177,7 +178,7 @@
   (setq-local comment-end-skip "[ \t]*--+}")
   (setq-local indent-tabs-mode nil)
   (setq-local electric-pair-pairs
-	      (list (cons ?` ?`) (cons ?( ?)) (cons ?{ ?}) (cons ?" ?")))
+	      (list (cons ?` ?`) (cons ?( ?)) (cons ?{ ?}) (cons ?" ?") (cons ?[ ?])))
   (setq-local treesit-defun-name-function 'haskell-ts-defun-name)
   (setq-local treesit-defun-type-regexp "function")
   ;; Imenu
