@@ -1,10 +1,10 @@
 
-A WIP haskell mode that requires treesitter and offers basic
-indentation, syntax highlighting and imenu, and a comint repl.
+A haskell mode that requires treesitter and offers:
+- Syntax highliting
+- Indentation
+- Imenu support
+- REPL
 
 * TODO
 - Autoloading
 - Syntax table
-- Fix treesit-font-lock-feature-list
-- Comment problem
-- Better imenu supprt

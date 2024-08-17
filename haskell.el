@@ -103,7 +103,10 @@
   ;; Indent 
   (setq-local treesit-simple-indent-rules haskell-ts-indent-rules)
   ;; Misc
-  (setq-local comment-start "--")
+  (setq-local comment-start "{- ")
+  (setq-local comment-end "-}")
+  (setq-local comment-start-skip "\\(?:--+\\|{-+\\) *")
+  (setq-local comment-end-skip "[ \t]*--+}")
   (setq-local indent-tabs-mode nil)
   (setq-local electric-pair-pairs
 	      (list (cons ?` ?`) (cons ?( ?)) (cons ?{ ?}) (cons ?' ?') (cons ?" ?")))
@@ -111,33 +114,52 @@
   (setq-local treesit-defun-type-regexp "function")
   ;; Imenu
   (setq-local treesit-simple-imenu-settings
-	      `((nil haskell-ts-imenu-func-node-p nil haskell-ts-imenu-name-function)
-		("Signatures.." haskell-ts-imenu-sig-node-p nil haskell-ts-imenu-sig-name-function)))
+	      `((nil haskell-ts-imenu-func-node-p nil
+		     ,(haskell-ts-imenu-name-function 'haskell-ts-imenu-func-node-p))
+		("Signatures.." haskell-ts-imenu-sig-node-p nil
+		 ,(haskell-ts-imenu-name-function 'haskell-ts-imenu-sig-node-p))
+		("Data..." haskell_ts-imenu-data-type-p nil
+		 (lambda (node)
+		   (treesit-node-text (treesit-node-child node 1))))))
   ;; font-lock.
   (setq-local treesit-font-lock-settings haskell-ts-font-lock)
-  (setq-local treesit-font-lock-feature-list
-	      '(( comment  str pragma type keyword definition function args match)))
+  (setq-local treesit-font-lock-feature-list	
+	      '(( comment  str pragma)
+		(type definition )
+		(args function match)
+		(keyword)))
   (treesit-major-mode-setup))
 
+(defun haskell-ts-imenu-node-p (regex node)
+    (and (string-match-p regex (treesit-node-type node))
+	 (string= (treesit-node-type (treesit-node-parent node)) "declarations")))
+
+(defmacro haskell-ts-imenu-name-function (check-func)
+  `(lambda (node)
+    (let ((name (treesit-node-text node)))
+      (if (funcall ,check-func node)
+	  (haskell-ts-defun-name node)
+	nil))))
+
 (defun haskell-ts-imenu-func-node-p (node)
-  (and (string-match-p "function\\|bind" (treesit-node-type node))
-       (string= (treesit-node-type (treesit-node-parent node)) "declarations")))
+  (haskell-ts-imenu-node-p "function\\|bind" node))
 
 (defun haskell-ts-imenu-sig-node-p (node)
-  (and (string-match-p "signature" (treesit-node-type node))
-       (string= (treesit-node-type (treesit-node-parent node)) "declarations")))
+  (haskell-ts-imenu-node-p "signature" node))
 
-(defun haskell-ts-imenu-sig-name-function (node)
-  (let ((name (treesit-node-text node)))
-    (if (haskell-ts-imenu-sig-node-p node)
-	(haskell-ts-defun-name node)
-      nil)))
+(defun haskell_ts-imenu-data-type-p (node)
+  (haskell-ts-imenu-node-p "data_type" node))
 
-(defun haskell-ts-imenu-name-function (node)
-  (let ((name (treesit-node-text node)))
-    (if (haskell-ts-imenu-func-node-p node)
-	(haskell-ts-defun-name node)
-      nil)))
+;; (defun haskell-ts-imenu-sig-name-function (node) }}-
+;;   (let ((name (treesit-node-text node))) }}-
+;;     (if (haskell-ts-imenu-sig-node-p node) }}-
+;; 	(haskell-ts-defun-name node) }}-
+;;       nil))) }}-
+;; (defun haskell-ts-imenu-name-function (node) }}-
+;;   (let ((name (treesit-node-text node))) }}-
+;;     (if (haskell-ts-imenu-func-node-p node) }}-
+;; 	(haskell-ts-defun-name node) }}-
+;;       nil))) }}-
 
 (defun haskell-ts-defun-name (node)
   (treesit-node-text (treesit-node-child node 0)))
