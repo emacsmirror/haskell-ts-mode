@@ -4,7 +4,3 @@ A haskell mode that requires treesitter and offers:
 - Indentation
 - Imenu support
 - REPL
-
-* TODO
-- Autoloading
-- Syntax table

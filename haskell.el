@@ -1,10 +1,18 @@
 
-(require 'treesit)
-(require 'comint)
+(eval-when-compile
+ (require 'treesit)
+ (require 'comint))
+
 (declare-function treesit-parser-create "treesit.c")
+(declare-function treesit-induce-sparse-tree "treesit.c")
+(declare-function treesit-node-child "treesit.c")
+(declare-function treesit-node-start "treesit.c")
+(declare-function treesit-node-text "treesit.c")
+(declare-function treesit-node-type "treesit.c")
+(declare-function treesit-search-subtree "treesit.c")
 
 ;; TODO change to defvar
-(setq haskell-ts-font-lock
+(defvar haskell-ts-font-lock
       (treesit-font-lock-rules
        :language 'haskell
        :feature 'keyword
@@ -42,12 +50,15 @@
        `((char) @font-lock-string-face
 	 (string) @font-lock-string-face)))
 
-;; TODO change to defvar
-(setq haskell-ts-indent-rules
+(defvar haskell-ts-indent-rules
       `((haskell
 	 ((node-is "comment") column-0 0)
 	 ((parent-is "imports") column-0 0)
 
+	 ;; list
+	 ((node-is "]") parent 0)
+	 ((parent-is "list") parent 1)
+	 
 	 ;; If then else
 	 ((node-is "then") parent 2)
 	 ((node-is "^else$") parent 2)
@@ -61,7 +72,6 @@
 	 ((node-is "match") prev-sibling 0)
 	 ((parent-is "match") grand-parent 2)
 
-	 
 	 ;; Do Hg
 	 ((lambda (node parent bol)
 	    (string= "do" (treesit-node-type (treesit-node-prev-sibling node))))
@@ -89,13 +99,44 @@
 	 (no-node prev-adaptive-prefix 0)
 	 ((parent-is "haskell") column-0 0)
 	 ((parent-is "declarations") column-0 0)
+
+	 ((parent-is "record") grand-parent 0)
+	 
+	 ;; Backup
+	 (catch-all parent 2)
 	 )))
+
+;; Copied from haskell-mode
+(setq haskell-ts-mode-syntax-table
+    (let ((table (make-syntax-table)))
+    (modify-syntax-entry ?\  " " table)
+    (modify-syntax-entry ?\t " " table)
+    (modify-syntax-entry ?\" "\"" table)
+    (modify-syntax-entry ?\' "_" table)
+    (modify-syntax-entry ?_  "_" table)
+    (modify-syntax-entry ?\( "()" table)
+    (modify-syntax-entry ?\) ")(" table)
+    (modify-syntax-entry ?\[  "(]" table)
+    (modify-syntax-entry ?\]  ")[" table)
+
+    (modify-syntax-entry ?\{  "(}1nb" table)
+    (modify-syntax-entry ?\}  "){4nb" table)
+    (modify-syntax-entry ?-  "< 123" table)
+    (modify-syntax-entry ?\n ">" table)
+
+    (modify-syntax-entry ?\` "$`" table)
+
+    (mapc (lambda (x)
+            (modify-syntax-entry x "." table))
+          "!#$%&*+./:<=>?@^|~,;\\")
+    table))
 
 
 ;;;###autoload
 (define-derived-mode haskell-ts-mode prog-mode "haskell ts mode"
-  "Mjaor mode for Haskell files using tree-sitter"
-  :group 'haskell
+  "major mode for Haskell files using tree-sitter"
+  :syntax-table haskell-ts-mode-syntax-table
+  :interactive t
   (unless (treesit-ready-p 'haskell)
     (error "Tree-sitter for Haskell is not available"))
   (treesit-parser-create 'haskell)
@@ -109,7 +150,7 @@
   (setq-local comment-end-skip "[ \t]*--+}")
   (setq-local indent-tabs-mode nil)
   (setq-local electric-pair-pairs
-	      (list (cons ?` ?`) (cons ?( ?)) (cons ?{ ?}) (cons ?' ?') (cons ?" ?")))
+	      (list (cons ?` ?`) (cons ?( ?)) (cons ?{ ?}) (cons ?" ?")))
   (setq-local treesit-defun-name-function 'haskell-ts-defun-name)
   (setq-local treesit-defun-type-regexp "function")
   ;; Imenu
@@ -126,8 +167,7 @@
   (setq-local treesit-font-lock-feature-list	
 	      '(( comment  str pragma)
 		(type definition )
-		(args function match)
-		(keyword)))
+		(args function match keyword)))
   (treesit-major-mode-setup))
 
 (defun haskell-ts-imenu-node-p (regex node)
@@ -149,17 +189,6 @@
 
 (defun haskell_ts-imenu-data-type-p (node)
   (haskell-ts-imenu-node-p "data_type" node))
-
-;; (defun haskell-ts-imenu-sig-name-function (node) }}-
-;;   (let ((name (treesit-node-text node))) }}-
-;;     (if (haskell-ts-imenu-sig-node-p node) }}-
-;; 	(haskell-ts-defun-name node) }}-
-;;       nil))) }}-
-;; (defun haskell-ts-imenu-name-function (node) }}-
-;;   (let ((name (treesit-node-text node))) }}-
-;;     (if (haskell-ts-imenu-func-node-p node) }}-
-;; 	(haskell-ts-defun-name node) }}-
-;;       nil))) }}-
 
 (defun haskell-ts-defun-name (node)
   (treesit-node-text (treesit-node-child node 0)))
@@ -183,4 +212,5 @@
 (define-key haskell-ts-mode-map (kbd "C-c c") 'haskell-compile-region-and-go)
 (define-key haskell-ts-mode-map (kbd "C-c r") 'run-haskell)
 
-(add-to-list 'auto-mode-alist '("\\.hs\\'" . haskell-ts-mode))
+(when (treesit-ready-p 'haskell)
+  (add-to-list 'auto-mode-alist '("\\.hs\\'" . haskell-ts-mode)))
