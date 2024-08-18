@@ -38,33 +38,56 @@
 (declare-function treesit-node-type "treesit.c")
 (declare-function treesit-search-subtree "treesit.c")
 
+(defvar haskell-ts-font-lock-feature-list
+  '((comment str pragma parens)
+    (type definition function args)
+    (match keyword)
+    (otherwise)))
+
 ;; TODO change to defvar
 (defvar haskell-ts-font-lock
       (treesit-font-lock-rules
        :language 'haskell
+       :feature 'parens
+       `(["(" ")" "[" "]"] @font-lock-operator-face
+       (infix operator: (_) @font-lock-operator-face))
+       :language 'haskell
        :feature 'keyword
        `(["module" "import" "data" "let" "where" "case"
 	  "if" "then" "else" "of" "do" "in" "instance"]
-	 @font-lock-keyword-face
-	 ["(" ")" "[" "]"] @font-lock-operator-face)
+	 @font-lock-keyword-face)
+       :language 'haskell
+       :feature 'otherwise
+       :override t
+       `(((match (guards guard: (boolean (variable) @font-lock-keyword-face)))
+	 (:match "otherwise" @font-lock-keyword-face)))
+       :language 'haskell
+       :feature 'args
+       :override 'keep
+       (concat
+	"(function (infix left_operand: (_) @haskell-ts-fontify-arg))"
+	"(function (infix right_operand: (_) @haskell-ts-fontify-arg))"
+	"(generator . (_) @haskell-ts-fontify-arg)"
+	"(bind (as (variable) . (_) @haskell-ts-fontify-arg))"
+        "(patterns) @haskell-ts-fontify-arg"
+	)
        :language 'haskell
        :feature 'type
        `((type) @font-lock-type-face
 	 (constructor) @font-lock-type-face)
        :language 'haskell
        :feature 'function
+       :override t
        `((function (variable) @font-lock-function-name-face)
 	 (function (infix (operator)  @font-lock-function-name-face))
 	 (bind (variable) @font-lock-function-name-face)
-	 (function (infix (infix_id (variable) @font-lock-function-name-face))))
-       :language 'haskell
-       :feature 'args
-       `((function (patterns) @font-lock-variable-name-face)
-	 (function (infix (variable)  @font-lock-variable-name-face))
-	 (lambda (patterns (variable) @font-lock-variable-name-face)))
+	 (function (infix (infix_id (variable) @font-lock-function-name-face)))
+	 (bind (as (variable) @font-lock-function-name-face)))
        :language 'haskell
        :feature 'match
        `((match ("|" @font-lock-doc-face) ("=" @font-lock-doc-face))
+	 (list_comprehension ("|" @font-lock-doc-face
+			      (qualifiers (generator "<-" @font-lock-doc-face))))
 	 (match ("->" @font-lock-doc-face)))
        :language 'haskell
        :feature 'comment
@@ -135,7 +158,7 @@
 	 )))
 
 ;; Copied from haskell-mode
-(setq haskell-ts-mode-syntax-table
+(defvar haskell-ts-mode-syntax-table
     (let ((table (make-syntax-table)))
     (modify-syntax-entry ?\  " " table)
     (modify-syntax-entry ?\t " " table)
@@ -193,10 +216,16 @@
   ;; font-lock.
   (setq-local treesit-font-lock-settings haskell-ts-font-lock)
   (setq-local treesit-font-lock-feature-list	
-	      '(( comment  str pragma)
-		(type definition )
-		(args function match keyword)))
+	      haskell-ts-font-lock-feature-list)
   (treesit-major-mode-setup))
+
+(defun haskell-ts-fontify-arg (node &optional override start end)
+  (if (string= "variable" (treesit-node-type node))
+      (put-text-property
+       (treesit-node-start node)
+       (treesit-node-end node)
+       'face font-lock-variable-name-face)
+    (mapc 'haskell-ts-fontify-arg (treesit-node-children node))))
 
 (defun haskell-ts-imenu-node-p (regex node)
     (and (string-match-p regex (treesit-node-type node))
@@ -240,7 +269,7 @@
 (define-key haskell-ts-mode-map (kbd "C-c c") 'haskell-compile-region-and-go)
 (define-key haskell-ts-mode-map (kbd "C-c r") 'run-haskell)
 
-(when (treesit-ready-p 'haskell)
-  (add-to-list 'auto-mode-alist '("\\.hs\\'" . haskell-ts-mode)))
+;; (when (treesit-ready-p 'haskell)
+  ;; (add-to-list 'auto-mode-alist '("\\.hs\\'" . haskell-ts-mode)))
 
 (provide 'haskell-ts-mode)

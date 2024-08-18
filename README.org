@@ -11,3 +11,10 @@ A haskell mode that requires treesitter and offers:
 (add-to-list 'load-path "path/to/haskell-ts-mode")
 (require 'haskell-ts-mode)
 #+END_SRC
+
+* Customization
+
+if colour is too much or too less for you, adjust
+treesit-font-lock-level accordingly.
+
+If that is not enough, you can customize haskell-ts-font-lock-feature-list
