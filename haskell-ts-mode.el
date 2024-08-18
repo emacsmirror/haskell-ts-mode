@@ -208,7 +208,7 @@
 	      (list (cons ?` ?`) (cons ?( ?)) (cons ?{ ?}) (cons ?" ?") (cons ?[ ?])))
   (setq-local treesit-defun-name-function 'haskell-ts-defun-name)
   (setq-local treesit-defun-type-regexp "function")
-  (setq-local prettify-symbols-alist haskell-ts-prettify-symbols-alist)
+  (setq-local prettify-symbols-alist haskell-ts-prettify-symbols-alits)
   ;; Imenu
   (setq-local treesit-simple-imenu-settings
 	      `((nil haskell-ts-imenu-func-node-p nil
