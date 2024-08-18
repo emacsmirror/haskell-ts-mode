@@ -44,6 +44,10 @@
     (match keyword)
     (otherwise)))
 
+(defvar haskell-ts-prettify-symbols-alits
+      '(("\\" . "λ")
+	("/=" . "≠")))
+
 ;; TODO change to defvar
 (defvar haskell-ts-font-lock
       (treesit-font-lock-rules
@@ -204,6 +208,7 @@
 	      (list (cons ?` ?`) (cons ?( ?)) (cons ?{ ?}) (cons ?" ?") (cons ?[ ?])))
   (setq-local treesit-defun-name-function 'haskell-ts-defun-name)
   (setq-local treesit-defun-type-regexp "function")
+  (setq-local prettify-symbols-alist haskell-ts-prettify-symbols-alist)
   ;; Imenu
   (setq-local treesit-simple-imenu-settings
 	      `((nil haskell-ts-imenu-func-node-p nil

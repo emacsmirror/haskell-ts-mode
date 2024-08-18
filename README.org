@@ -1,10 +1,30 @@
 
+* Context
+
 A haskell mode that requires treesitter and offers:
 - Syntax highliting
 - Indentation
 - Imenu support
 - REPL
+- Prettify symbols mode support
 
+* Motivation
+  
+haskell-mode contains nearly 30k lines of code, and is
+about 30 years old.  Therefore, a lot of stuff emacs has gained the
+ability to do in those years, haskell-mode already has implemented
+them.
+
+In 2018, a mode called haskell-tng-mode was made to solve some of
+these problems. However because of haskell's syntax, it too became
+very complex and required a web of dependencies.
+
+Both these modes ended up practically parsing haskells syntax to
+implement indentation, so I thought why not use tree sitter?
+
+However, haskell(-tng)-mode is still a lot more complete than this,
+and is recommended if you have any commercial work to do.
+  
 * Installation
 
 #+BEGIN_SRC: elisp
@@ -18,3 +38,6 @@ if colour is too much or too less for you, adjust
 treesit-font-lock-level accordingly.
 
 If that is not enough, you can customize haskell-ts-font-lock-feature-list
+
+* TODO
+- support for customization UI
