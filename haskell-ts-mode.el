@@ -48,7 +48,6 @@
       '(("\\" . "λ")
 	("/=" . "≠")))
 
-;; TODO change to defvar
 (defvar haskell-ts-font-lock
       (treesit-font-lock-rules
        :language 'haskell
@@ -58,7 +57,7 @@
        :language 'haskell
        :feature 'keyword
        `(["module" "import" "data" "let" "where" "case"
-	  "if" "then" "else" "of" "do" "in" "instance"]
+	  "if" "then" "else" "of" "do" "in" "instance" "class"]
 	 @font-lock-keyword-face)
        :language 'haskell
        :feature 'otherwise
