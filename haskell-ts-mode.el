@@ -48,7 +48,7 @@
       '(("\\" . "λ")
 	("/=" . "≠")))
 
-(defvar haskell-ts-font-lock
+(setq haskell-ts-font-lock
       (treesit-font-lock-rules
        :language 'haskell
        :feature 'parens
@@ -100,8 +100,11 @@
        `((pragma) @font-lock-preprocessor-face)
        :language 'haskell
        :feature 'str
+       :override t
        `((char) @font-lock-string-face
-	 (string) @font-lock-string-face)))
+	 (string) @font-lock-string-face
+	 (quasiquote (quoter) @font-lock-type-face)
+	 (quasiquote (quasiquote_body) @font-lock-preprocessor-face))))
 
 (defvar haskell-ts-indent-rules
       `((haskell
