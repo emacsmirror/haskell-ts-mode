@@ -106,87 +106,139 @@
 	 (quasiquote (quoter) @font-lock-type-face)
 	 (quasiquote (quasiquote_body) @font-lock-preprocessor-face))))
 
-(defvar haskell-ts-indent-rules
-      `((haskell
-	 ((node-is "comment") column-0 0)
-	 ((parent-is "imports") column-0 0)
+(setq haskell-ts-indent-rules
+      (let ((p-prev-sib
+	     (lambda (node parent bol)
+	       (let ((n (treesit-node-prev-sibling node)))
+		 (while (string= "comment" (treesit-node-type n))
+		   (setq n (treesit-node-prev-sibling n)))
+		 (treesit-node-start n)))))
+	`((haskell
+	   ((node-is "comment") column-0 0)
+	   ((parent-is "imports") column-0 0)
+	   ;; Infix
+	   ((parent-is "infix") parent 0)
+	   ((node-is "infix") grand-parent 2)
+	   
+	   ;; list
+	   ((node-is "]") parent 0)
+	   ((parent-is "list") parent 1)
+	   
+	   ;; If then else
+	   ((node-is "then") parent 2)
+	   ((node-is "^else$") parent 2)
 
-	 ;; Infix
-	 ((parent-is "infix") parent 0)
-	 ((node-is "infix") grand-parent 2)
-	 
-	 ;; list
-	 ((node-is "]") parent 0)
-	 ((parent-is "list") parent 1)
-	 
-	 ;; If then else
-	 ((node-is "then") parent 2)
-	 ((node-is "^else$") parent 2)
+	   ((node-is "^in$") parent 2)
+	   
+	   ((parent-is "apply") parent -1)
+	   ;; Do Hg
+	   ((lambda (node parent bol)
+	      (let ((n (treesit-node-prev-sibling node)))
+		 (while (string= "comment" (treesit-node-type n))
+		   (setq n (treesit-node-prev-sibling n)))
+		 (string= "do" (treesit-node-type n))))
+	    grand-parent 0)
+	   ((parent-is "do") ,p-prev-sib 0)
 
-	 ((node-is "^in$") parent 2)
- 
-	 ((parent-is "apply") parent -1)
-	 
-	 ;; Match
-	 ((match "match" nil nil 2 2) parent 2)
-	 ((node-is "match") prev-sibling 0)
-	 ((parent-is "match") grand-parent 2)
+	   ((node-is "alternatives") grand-parent 0)
+	   ((parent-is "alternatives") grand-parent 2)
 
-	 ;; Do Hg
-	 ((lambda (node parent bol)
-	    (string= "do" (treesit-node-type (treesit-node-prev-sibling node))))
-	  grand-parent 0)
-	 ((parent-is "do") prev-sibling 0)
+	   (no-node prev-adaptive-prefix 0)
+	   
+	   ((parent-is "data_constructors") parent 0)
 
-	 ((node-is "alternatives") grand-parent 0)
-	 ((parent-is "alternatives") grand-parent 2)
+	   ;; where
+	   ((lambda (node parent bol)
+	      (let ((n (treesit-node-prev-sibling node)))
+		 (while (string= "comment" (treesit-node-type n))
+		   (setq n (treesit-node-prev-sibling n)))
+		 (string= "where" (treesit-node-type n))))
+	    (lambda (a b c)
+	      (+ 1 (treesit-node-start (treesit-node-prev-sibling b))))
+	    3)
+	   ((parent-is "local_binds") ,p-prev-sib 0)
+	   ((node-is "^where$") parent 2)
 
-	 (no-node prev-adaptive-prefix 0)
-	 
-	 ((parent-is "data_constructors") parent 0)
+	   ;; Match
+	   ;; ((match "match" nil 2 2 nil) ,p-prev-sib 0)
+	   ((lambda (node parent bol)
+	      (and (string= (treesit-node-type node) "match")
+	       (let ((pos 3)
+		     (n node)
+		     (ch (lambda () )))
+		 (while (and (not (null n))
+			     (not (eq pos 0)))
+		   (setq n (treesit-node-prev-sibling n))
+		   (unless (string= "comment" (treesit-node-type n))
+		     (setq pos (- pos 1))))
+		 (and (null n) (eq pos 0)))))
+	    parent 2)
+	   ;; ((match "match" nil nil 3 nil) ,p-prev-sib 0)
+	   ((lambda (node parent bol)
+	      (and (string= (treesit-node-type node) "match")
+	       (let ((pos 4)
+		     (n node)
+		     (ch (lambda () )))
+		 (while (and (not (null n))
+			     (not (eq pos 0)))
+		   (setq n (treesit-node-prev-sibling n))
+		   (unless (string= "comment" (treesit-node-type n))
+		     (setq pos (- pos 1))))
+		 (eq pos 0))))
+	    ,p-prev-sib 0)
+	   	   
+	   ((parent-is "haskell") column-0 0)
+	   ((parent-is "declarations") column-0 0)
 
-	 ;; where
-	 ((lambda (node parent bol)
-	    (string= "where" (treesit-node-type (treesit-node-prev-sibling node))))
-	  (lambda (a b c)
-	    (+ 1 (treesit-node-start (treesit-node-prev-sibling b))))
-	  3)
-	 ((parent-is "local_binds") prev-sibling 0)
-	 ((node-is "^where$") parent 2)
+	   ((parent-is "record") grand-parent 0)
+	   
+	   ;; Backup
+	   (catch-all parent 2)
+	   ))))
 
-	 ((parent-is "haskell") column-0 0)
-	 ((parent-is "declarations") column-0 0)
+;; Copied from haskell-tng-mode
+(setq haskell-ts-mode-syntax-table
+      (let ((table (make-syntax-table)))
+	(map-char-table
+	 (lambda (k v)
+	   ;; reset the (surprisingly numerous) defaults
+	   (let ((class (syntax-class v)))
+             (when (seq-contains-p '(1 4 5 6 9) class)
+               (modify-syntax-entry k "_" table))))
+	 (char-table-parent table))
+	;; whitechar
+	(seq-do
+	 (lambda (it) (modify-syntax-entry it " " table))
+	 (string-to-list "\r\n\f\v \t"))
+	;; ascSymbol
+	(seq-do
+	 (lambda (it) (modify-syntax-entry it "_" table))
+	 (string-to-list "!#$%&*+./<=>?\\^|-~:"))
+	(modify-syntax-entry ?_ "w" table)
+	;; some special (treated like punctuation)
+	(seq-do
+	 (lambda (it) (modify-syntax-entry it "." table))
+	 (string-to-list ",;@"))
+	;; apostrophe as a word, not delimiter
+	(modify-syntax-entry ?\' "w" table)
+	;; string delimiter
+	(modify-syntax-entry ?\" "\"" table)
+	;; parens and pairs (infix functions)
+	(modify-syntax-entry ?\( "()" table)
+	(modify-syntax-entry ?\) ")(" table)
+	(modify-syntax-entry ?\[ "(]" table)
+	(modify-syntax-entry ?\] ")[" table)
+	(modify-syntax-entry ?\` "$`" table)
 
-	 ((parent-is "record") grand-parent 0)
-	 
-	 ;; Backup
-	 (catch-all parent 2)
-	 )))
+	;; comments (subsuming pragmas)
+	(modify-syntax-entry ?\{  "(}1nb" table)
+	(modify-syntax-entry ?\}  "){4nb" table)
+	(modify-syntax-entry ?-  "_ 123" table) ;; TODO --> is not a comment
+	(seq-do
+	 (lambda (it) (modify-syntax-entry it ">" table))
+	 (string-to-list "\r\n\f\v"))
 
-;; Copied from haskell-mode
-(defvar haskell-ts-mode-syntax-table
-    (let ((table (make-syntax-table)))
-    (modify-syntax-entry ?\  " " table)
-    (modify-syntax-entry ?\t " " table)
-    (modify-syntax-entry ?\" "\"" table)
-    (modify-syntax-entry ?\' "_" table)
-    (modify-syntax-entry ?_  "_" table)
-    (modify-syntax-entry ?\( "()" table)
-    (modify-syntax-entry ?\) ")(" table)
-    (modify-syntax-entry ?\[  "(]" table)
-    (modify-syntax-entry ?\]  ")[" table)
-
-    (modify-syntax-entry ?\{  "(}1nb" table)
-    (modify-syntax-entry ?\}  "){4nb" table)
-    (modify-syntax-entry ?-  "< 123" table)
-    (modify-syntax-entry ?\n ">" table)
-
-    (modify-syntax-entry ?\` "$`" table)
-
-    (mapc (lambda (x)
-            (modify-syntax-entry x "." table))
-          "!#$%&*+./:<=>?@^|~,;\\")
-    table))
+	table))
 
 
 ;;;###autoload
