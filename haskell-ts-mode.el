@@ -201,10 +201,9 @@
   ;; Indent 
   (setq-local treesit-simple-indent-rules haskell-ts-indent-rules)
   ;; Misc
-  (setq-local comment-start "{- ")
-  (setq-local comment-end "-}")
-  (setq-local comment-start-skip "\\(?:--+\\|{-+\\) *")
-  (setq-local comment-end-skip "[ \t]*--+}")
+  (setq-local comment-start "-- ")
+  (setq-local comment-use-syntax nil)
+  (setq-local comment-start-skip "\\(?: \\|^\\)-+")
   (setq-local indent-tabs-mode nil)
   (setq-local electric-pair-pairs
 	      (list (cons ?` ?`) (cons ?( ?)) (cons ?{ ?}) (cons ?" ?") (cons ?[ ?])))
