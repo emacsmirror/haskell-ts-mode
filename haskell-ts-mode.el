@@ -106,7 +106,7 @@
 	 (quasiquote (quoter) @font-lock-type-face)
 	 (quasiquote (quasiquote_body) @font-lock-preprocessor-face))))
 
-(defvar haskell-ts-indent-rules
+(setq haskell-ts-indent-rules
       (let ((p-prev-sib
 	     (lambda (node parent bol)
 	       (let ((n (treesit-node-prev-sibling node)))
@@ -131,6 +131,7 @@
 	   ((node-is "^in$") parent 2)
 	   
 	   ((parent-is "apply") parent -1)
+	   ((parent-is "quasiquote_body") (lambda (a b c) c) 0)
 	   ;; Do Hg
 	   ((lambda (node parent bol)
 	      (let ((n (treesit-node-prev-sibling node)))
