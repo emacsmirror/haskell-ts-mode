@@ -42,7 +42,7 @@
   '((comment str pragma parens)
     (type definition function args)
     (match keyword)
-    (otherwise)))
+    (otherwise signature)))
 
 (defvar haskell-ts-prettify-symbols-alits
       '(("\\" . "λ")
@@ -51,7 +51,7 @@
 (defvar haskell-ts-font-lock
       (treesit-font-lock-rules
        :language 'haskell
-       :feature 'parens
+       :feature 'parens 
        `(["(" ")" "[" "]"] @font-lock-operator-face
        (infix operator: (_) @font-lock-operator-face))
        :language 'haskell
@@ -79,9 +79,13 @@
        `((type) @font-lock-type-face
 	 (constructor) @font-lock-type-face)
        :language 'haskell
+       :override t
+       :feature 'signature
+       `((signature (function) @haskell-ts-fontify-type))
+       :language 'haskell
        :feature 'function
        :override t
-       `((function (variable) @font-lock-function-name-face)
+       `((function name: (variable) @font-lock-function-name-face)
 	 (function (infix (operator)  @font-lock-function-name-face))
 	 (bind (variable) @font-lock-function-name-face)
 	 (function (infix (infix_id (variable) @font-lock-function-name-face)))
@@ -285,6 +289,15 @@
        (treesit-node-end node)
        'face font-lock-variable-name-face)
     (mapc 'haskell-ts-fontify-arg (treesit-node-children node))))
+
+(defun haskell-ts-fontify-type (node &optional override start end)
+  (let ((last-child (treesit-node-child node -1)))
+    (if (string= (treesit-node-type last-child) "function")
+	(haskell-ts-fontify-type last-child)
+      (put-text-property
+       (treesit-node-start last-child)
+       (treesit-node-end last-child)
+       'face font-lock-variable-name-face))))
 
 (defun haskell-ts-imenu-node-p (regex node)
     (and (string-match-p regex (treesit-node-type node))

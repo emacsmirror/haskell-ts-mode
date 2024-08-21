@@ -1,12 +1,40 @@
 
 * Context
 
-A haskell mode that requires treesitter and offers:
+A haskell mode that uses treesitter.
+
+The package is still in devlopment, please report bugs or email
+them(email found it main .el file).
+
+* Screenshot
+[[ss.png]]
+
+* Features
+The basic features are:
 - Syntax highliting
 - Indentation
 - Imenu support
 - REPL
 - Prettify symbols mode support
+
+The more interesting features are:
+- Logical syntax highlighting:
+  - Only arguments that can be used in functions are highlighted, eg
+    in `f (_:(a:[])) only 'a' is highlighted
+  - The return type of a function is optionally highlighted, if
+    treesit-font-lock-level is set to 4
+  - All new variabels are(or should be) highlighted, this includes
+    generators, lambda args.
+  - highlighting the '=' operaotr in guarded matches correctly, this
+    would be stupidly hard in regexp based syntax
+- Unlike haskell-mode, quasi quotes are understood and do not confuse
+  the mode
+- Consistant indentation: haskell-mode's indentation works in a
+  cyclical way, it cycles through where you might want indentation.
+  haskell-ts-mode, meanwhile relies on you to set the parse tree
+  changing whitespace.
+- Significantly more perfomant than haskell(-tng)-mode, don't have a
+  number on this yet.
 
 * Motivation
   
