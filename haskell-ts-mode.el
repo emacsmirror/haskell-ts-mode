@@ -106,7 +106,7 @@
 	 (quasiquote (quoter) @font-lock-type-face)
 	 (quasiquote (quasiquote_body) @font-lock-preprocessor-face))))
 
-(setq haskell-ts-indent-rules
+(defvar haskell-ts-indent-rules
       (let ((p-prev-sib
 	     (lambda (node parent bol)
 	       (let ((n (treesit-node-prev-sibling node)))
