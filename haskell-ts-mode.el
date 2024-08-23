@@ -350,6 +350,10 @@
 (define-key haskell-ts-mode-map (kbd "C-c c") 'haskell-compile-region-and-go)
 (define-key haskell-ts-mode-map (kbd "C-c r") 'run-haskell)
 
+(with-eval-after-load 'eglot
+  (add-to-list 'eglot-server-programs 
+	       '(haskell-ts-mode . ("haskell-language-server-wrapper" "--lsp"))))
+
 (when (treesit-ready-p 'haskell)
   (add-to-list 'auto-mode-alist '("\\.hs\\'" . haskell-ts-mode)))
 
