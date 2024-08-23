@@ -98,10 +98,12 @@
 	 (match ("->" @font-lock-doc-face)))
        :language 'haskell
        :feature 'comment
-       `(((comment) @font-lock-comment-face))
+       `(((comment) @font-lock-comment-face)
+	 ((haddock) @font-lock-doc-face))
        :language 'haskell
        :feature 'pragma
-       `((pragma) @font-lock-preprocessor-face)
+       `((pragma) @font-lock-preprocessor-face
+	 (cpp) @font-lock-preprocessor-face)
        :language 'haskell
        :feature 'str
        :override t
@@ -119,10 +121,11 @@
 		 (treesit-node-start n)))))
 	`((haskell
 	   ((node-is "comment") column-0 0)
+	   ((parent-is "comment") column-0 0)
 	   ((parent-is "imports") column-0 0)
 	   ;; Infix
 	   ((parent-is "infix") parent 0)
-	   ((node-is "infix") grand-parent 2)
+	   ((node-is "infix") standalone-parent 2)
 	   
 	   ;; list
 	   ((node-is "]") parent 0)
@@ -133,8 +136,9 @@
 	   ((node-is "^else$") parent 2)
 
 	   ((node-is "^in$") parent 2)
-	   
+
 	   ((parent-is "apply") parent -1)
+	   ((node-is "quasiquote") grand-parent 2)
 	   ((parent-is "quasiquote_body") (lambda (a b c) c) 0)
 	   ;; Do Hg
 	   ((lambda (node parent bol)
@@ -196,6 +200,11 @@
 	   ((parent-is "declarations") column-0 0)
 
 	   ((parent-is "record") grand-parent 0)
+
+	   ((parent-is "exports")
+	    (lambda (a b c) (treesit-node-start (treesit-node-prev-sibling b)))
+	    0)
+	   ((n-p-gp nil "signature" "foreign_import") grand-parent 3)
 	   
 	   ;; Backup
 	   (catch-all parent 2)

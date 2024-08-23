@@ -33,8 +33,6 @@ The more interesting features are:
   cyclical way, it cycles through where you might want indentation.
   haskell-ts-mode, meanwhile relies on you to set the parse tree
   changing whitespace.
-- Significantly more perfomant than haskell(-tng)-mode, don't have a
-  number on this yet.
 
 * Motivation
   
@@ -49,6 +47,55 @@ very complex and required a web of dependencies.
 
 Both these modes ended up practically parsing haskells syntax to
 implement indentation, so I thought why not use tree sitter?
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 However, haskell(-tng)-mode is still a lot more complete than this,
 and is recommended if you have any commercial work to do.
