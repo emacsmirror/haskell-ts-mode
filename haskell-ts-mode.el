@@ -44,16 +44,22 @@
     (match keyword)
     (otherwise signature)))
 
+(defvar haskell-ts-use-indent t
+  "Set to nil if you don't want to use emacs indent")
+
+(defvar haskell-ts-font-lock-level 4
+  "Level of font lock, 1 for minimum highlghting and 4 for maximum")
+
 (defvar haskell-ts-prettify-symbols-alits
       '(("\\" . "λ")
-	("/=" . "≠")))
+	("/=" . "≠")
+	("->" . "→")
+	("=>" . "⇒")
+	("<-" . "←")
+	("<=" . "⇐")))
 
 (defvar haskell-ts-font-lock
       (treesit-font-lock-rules
-       :language 'haskell
-       :feature 'parens 
-       `(["(" ")" "[" "]"] @font-lock-operator-face
-       (infix operator: (_) @font-lock-operator-face))
        :language 'haskell
        :feature 'keyword
        `(["module" "import" "data" "let" "where" "case"
@@ -81,7 +87,8 @@
        :language 'haskell
        :override t
        :feature 'signature
-       `((signature (function) @haskell-ts-fontify-type))
+       `((signature (function) @haskell-ts-fontify-type)
+	 (context (function) @haskell-ts-fontify-type))
        :language 'haskell
        :feature 'function
        :override t
@@ -110,10 +117,16 @@
        `((char) @font-lock-string-face
 	 (string) @font-lock-string-face
 	 (quasiquote (quoter) @font-lock-type-face)
-	 (quasiquote (quasiquote_body) @font-lock-preprocessor-face))))
+	 (quasiquote (quasiquote_body) @font-lock-preprocessor-face))
+       :language 'haskell
+       :feature 'parens
+       :override t
+       `(["(" ")" "[" "]"] @font-lock-operator-face
+       (infix operator: (_) @font-lock-operator-face))))
 
 (defvar haskell-ts-indent-rules
-      (let ((p-prev-sib
+      (let ((bind-reg "local_binds\\|instance_declarations")
+	    (p-prev-sib
 	     (lambda (node parent bol)
 	       (let ((n (treesit-node-prev-sibling node)))
 		 (while (string= "comment" (treesit-node-type n))
@@ -124,8 +137,14 @@
 	   ((parent-is "comment") column-0 0)
 	   ((parent-is "imports") column-0 0)
 	   ;; Infix
-	   ((parent-is "infix") parent 0)
+	   ((parent-is "infix") standalone-parent 1)
 	   ((node-is "infix") standalone-parent 2)
+
+	   ;; Lambda
+	   ((parent-is "lambda") standalone-parent 2)
+
+	   ;; in
+	   ((node-is "^in$") parent 0)
 	   
 	   ;; list
 	   ((node-is "]") parent 0)
@@ -135,22 +154,23 @@
 	   ((node-is "then") parent 2)
 	   ((node-is "^else$") parent 2)
 
-	   ((node-is "^in$") parent 2)
-
 	   ((parent-is "apply") parent -1)
 	   ((node-is "quasiquote") grand-parent 2)
 	   ((parent-is "quasiquote_body") (lambda (a b c) c) 0)
 	   ;; Do Hg
 	   ((lambda (node parent bol)
 	      (let ((n (treesit-node-prev-sibling node)))
-		 (while (string= "comment" (treesit-node-type n))
+		(while (string= "comment" (treesit-node-type n))
 		   (setq n (treesit-node-prev-sibling n)))
 		 (string= "do" (treesit-node-type n))))
-	    grand-parent 0)
+	    standalone-parent 3)
 	   ((parent-is "do") ,p-prev-sib 0)
 
-	   ((node-is "alternatives") grand-parent 0)
-	   ((parent-is "alternatives") grand-parent 2)
+	   ((node-is "alternatives")
+	    (lambda (a b c)
+	      (treesit-node-start (treesit-node-child b 0)))
+	   4)
+	   ((parent-is "alternatives") ,p-prev-sib 0)
 
 	   (no-node prev-adaptive-prefix 0)
 	   
@@ -165,9 +185,9 @@
 	    (lambda (a b c)
 	      (+ 1 (treesit-node-start (treesit-node-prev-sibling b))))
 	    3)
-	   ((parent-is "local_binds") ,p-prev-sib 0)
+	   ((parent-is "local_binds\\|instance_declarations") ,p-prev-sib 0)
 	   ((node-is "^where$") parent 2)
-
+	   
 	   ;; Match
 	   ;; ((match "match" nil 2 2 nil) ,p-prev-sib 0)
 	   ((lambda (node parent bol)
@@ -195,7 +215,8 @@
 		     (setq pos (- pos 1))))
 		 (eq pos 0))))
 	    ,p-prev-sib 0)
-	   	   
+	   ((parent-is "match") standalone-parent 2)
+	   
 	   ((parent-is "haskell") column-0 0)
 	   ((parent-is "declarations") column-0 0)
 
@@ -265,7 +286,8 @@
   (treesit-parser-create 'haskell)
   (setq-local treesit-defun-type-regexp "\\(?:\\(?:function\\|struct\\)_definition\\)")
   ;; Indent 
-  (setq-local treesit-simple-indent-rules haskell-ts-indent-rules)
+  (and haskell-ts-use-indent
+   (setq-local treesit-simple-indent-rules haskell-ts-indent-rules))
   ;; Misc
   (setq-local comment-start "-- ")
   (setq-local comment-use-syntax nil)
@@ -286,6 +308,7 @@
 		 (lambda (node)
 		   (treesit-node-text (treesit-node-child node 1))))))
   ;; font-lock.
+  (setq-local treesit-font-lock-level haskell-ts-font-lock-level)
   (setq-local treesit-font-lock-settings haskell-ts-font-lock)
   (setq-local treesit-font-lock-feature-list	
 	      haskell-ts-font-lock-feature-list)
