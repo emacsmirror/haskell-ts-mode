@@ -4,7 +4,7 @@
 A haskell mode that uses treesitter.
 
 * Screenshot
-[[ss.png]]
+[[./ss.png]]
 
 The above screenshot is indented coloured using haskell-ts-mode, with
 prettify-symbols-mode enabled.
