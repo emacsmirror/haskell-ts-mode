@@ -26,9 +26,7 @@
 
 ;;; Code:
 
-(eval-when-compile
- (require 'treesit)
- (require 'comint))
+(eval-when-compile (require 'comint) (require 'treesit))
 
 (declare-function treesit-parser-create "treesit.c")
 (declare-function treesit-induce-sparse-tree "treesit.c")
@@ -45,10 +43,10 @@
     (otherwise signature)))
 
 (defvar haskell-ts-use-indent t
-  "Set to nil if you don't want to use emacs indent")
+  "Set to nil if you don't want to use Emacs indent.")
 
 (defvar haskell-ts-font-lock-level 4
-  "Level of font lock, 1 for minimum highlghting and 4 for maximum")
+  "Level of font lock, 1 for minimum highlghting and 4 for maximum.")
 
 (defvar haskell-ts-prettify-symbols-alits
       '(("\\" . "λ")
@@ -59,8 +57,8 @@
 	("<=" . "≥")
 	(">=" . "≤")))
 
-(defvar haskell-ts-font-lock
-      (treesit-font-lock-rules
+(defun haskell-ts-font-lock ()
+    (treesit-font-lock-rules
        :language 'haskell
        :feature 'keyword
        `(["module" "import" "data" "let" "where" "case"
@@ -126,21 +124,20 @@
        (infix operator: (_) @font-lock-operator-face))))
 
 (defvar haskell-ts-indent-rules
-      (let ((bind-reg "local_binds\\|instance_declarations")
-	    (p-prev-sib
-	     (lambda (node parent bol)
+      (let ((p-prev-sib
+	     (lambda (node _ _)
 	       (let ((n (treesit-node-prev-sibling node)))
 		 (while (string= "comment" (treesit-node-type n))
 		   (setq n (treesit-node-prev-sibling n)))
 		 (treesit-node-start n)))))
 	`((haskell
 	   ((node-is "comment") column-0 0)
+	   ((node-is "cpp") column-0 0)
 	   ((parent-is "comment") column-0 0)
 	   ((parent-is "imports") column-0 0)
 	   ;; Infix
 	   ((parent-is "infix") standalone-parent 1)
 	   ((node-is "infix") standalone-parent 2)
-
 	   ;; Lambda
 	   ((parent-is "lambda") standalone-parent 2)
 
@@ -157,7 +154,7 @@
 
 	   ((parent-is "apply") parent -1)
 	   ((node-is "quasiquote") grand-parent 2)
-	   ((parent-is "quasiquote_body") (lambda (a b c) c) 0)
+	   ((parent-is "quasiquote_body") (lambda (_ _ c) c) 0)
 	   ;; Do Hg
 	   ((lambda (node parent bol)
 	      (let ((n (treesit-node-prev-sibling node)))
@@ -168,7 +165,7 @@
 	   ((parent-is "do") ,p-prev-sib 0)
 
 	   ((node-is "alternatives")
-	    (lambda (a b c)
+	    (lambda (_ b _)
 	      (treesit-node-start (treesit-node-child b 0)))
 	   4)
 	   ((parent-is "alternatives") ,p-prev-sib 0)
@@ -178,12 +175,12 @@
 	   ((parent-is "data_constructors") parent 0)
 
 	   ;; where
-	   ((lambda (node parent bol)
+	   ((lambda (node _ _)
 	      (let ((n (treesit-node-prev-sibling node)))
 		 (while (string= "comment" (treesit-node-type n))
 		   (setq n (treesit-node-prev-sibling n)))
 		 (string= "where" (treesit-node-type n))))
-	    (lambda (a b c)
+	    (lambda (_ b _)
 	      (+ 1 (treesit-node-start (treesit-node-prev-sibling b))))
 	    3)
 	   ((parent-is "local_binds\\|instance_declarations") ,p-prev-sib 0)
@@ -191,7 +188,7 @@
 	   
 	   ;; Match
 	   ;; ((match "match" nil 2 2 nil) ,p-prev-sib 0)
-	   ((lambda (node parent bol)
+	   ((lambda (node _ _)
 	      (and (string= (treesit-node-type node) "match")
 	       (let ((pos 3)
 		     (n node)
@@ -204,7 +201,7 @@
 		 (and (null n) (eq pos 0)))))
 	    parent 2)
 	   ;; ((match "match" nil nil 3 nil) ,p-prev-sib 0)
-	   ((lambda (node parent bol)
+	   ((lambda (node _ _)
 	      (and (string= (treesit-node-type node) "match")
 	       (let ((pos 4)
 		     (n node)
@@ -224,7 +221,7 @@
 	   ((parent-is "record") grand-parent 0)
 
 	   ((parent-is "exports")
-	    (lambda (a b c) (treesit-node-start (treesit-node-prev-sibling b)))
+	    (lambda (_ b _) (treesit-node-start (treesit-node-prev-sibling b)))
 	    0)
 	   ((n-p-gp nil "signature" "foreign_import") grand-parent 3)
 	   
@@ -296,7 +293,7 @@
   (setq-local comment-start-skip "\\(?: \\|^\\)-+")
   ;; Elecric
   (setq-local electric-pair-pairs
-	      (list (cons ?` ?`) (cons ?( ?)) (cons ?{ ?}) (cons ?" ?") (cons ?[ ?])))
+	      (list (cons ?` ?`) (cons ?\( ?\)) (cons ?{ ?}) (cons ?\" ?\") (cons ?\[ ?\])))
   ;; Nav
   (setq-local treesit-defun-name-function 'haskell-ts-defun-name)
   (setq-local treesit-defun-type-regexp "function")
@@ -312,7 +309,7 @@
 		   (treesit-node-text (treesit-node-child node 1))))))
   ;; font-lock.
   (setq-local treesit-font-lock-level haskell-ts-font-lock-level)
-  (setq-local treesit-font-lock-settings haskell-ts-font-lock)
+  (setq-local treesit-font-lock-settings (haskell-ts-font-lock))
   (setq-local treesit-font-lock-feature-list	
 	      haskell-ts-font-lock-feature-list)
   (treesit-major-mode-setup))
@@ -334,16 +331,16 @@
        (treesit-node-end last-child)
        'face font-lock-variable-name-face))))
 
-(defun haskell-ts-imenu-node-p (regex node)
-    (and (string-match-p regex (treesit-node-type node))
-	 (string= (treesit-node-type (treesit-node-parent node)) "declarations")))
-
 (defmacro haskell-ts-imenu-name-function (check-func)
   `(lambda (node)
     (let ((name (treesit-node-text node)))
       (if (funcall ,check-func node)
 	  (haskell-ts-defun-name node)
 	nil))))
+
+(defun haskell-ts-imenu-node-p (regex node)
+    (and (string-match-p regex (treesit-node-type node))
+	 (string= (treesit-node-type (treesit-node-parent node)) "declarations")))
 
 (defun haskell-ts-imenu-func-node-p (node)
   (haskell-ts-imenu-node-p "function\\|bind" node))
@@ -384,3 +381,6 @@
   (add-to-list 'auto-mode-alist '("\\.hs\\'" . haskell-ts-mode)))
 
 (provide 'haskell-ts-mode)
+
+;;; haskell-ts-mode.el ends here
+
