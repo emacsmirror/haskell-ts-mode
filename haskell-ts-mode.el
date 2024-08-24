@@ -288,14 +288,16 @@
   (setq-local treesit-defun-type-regexp "\\(?:\\(?:function\\|struct\\)_definition\\)")
   ;; Indent 
   (and haskell-ts-use-indent
-   (setq-local treesit-simple-indent-rules haskell-ts-indent-rules))
-  ;; Misc
+       (setq-local treesit-simple-indent-rules haskell-ts-indent-rules)
+       (setq-local indent-tabs-mode nil))
+  ;; Comment
   (setq-local comment-start "-- ")
   (setq-local comment-use-syntax nil)
   (setq-local comment-start-skip "\\(?: \\|^\\)-+")
-  (setq-local indent-tabs-mode nil)
+  ;; Elecric
   (setq-local electric-pair-pairs
 	      (list (cons ?` ?`) (cons ?( ?)) (cons ?{ ?}) (cons ?" ?") (cons ?[ ?])))
+  ;; Nav
   (setq-local treesit-defun-name-function 'haskell-ts-defun-name)
   (setq-local treesit-defun-type-regexp "function")
   (setq-local prettify-symbols-alist haskell-ts-prettify-symbols-alits)
