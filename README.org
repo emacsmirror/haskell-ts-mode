@@ -21,7 +21,8 @@ an overview of the features are:
 The more interesting features are:
 - Logical syntax highlighting:
   - Only arguments that can be used in functions are highlighted, eg
-    in `f (_:(a:[])) only 'a' is highlighted
+    in `f (_:(a:[])) only 'a' is highlighted, as it is the only
+    variable that is captured that can be used in body of function
   - The return type of a function is highlighted
   - All new variabels are(or should be) highlighted, this includes
     generators, lambda args.
