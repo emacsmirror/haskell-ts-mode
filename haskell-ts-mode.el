@@ -56,7 +56,8 @@
 	("->" . "→")
 	("=>" . "⇒")
 	("<-" . "←")
-	("<=" . "⇐")))
+	("<=" . "≥")
+	(">=" . "≤")))
 
 (defvar haskell-ts-font-lock
       (treesit-font-lock-rules
