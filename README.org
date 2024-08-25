@@ -15,7 +15,7 @@ an overview of the features are:
 - Syntax highliting
 - Indentation
 - Imenu support
-- REPL
+- REPL (C-c r in the mode to run)
 - Prettify symbols mode support
 
 * Comparasion with haskell-mode
@@ -85,6 +85,13 @@ unicode alternatives.
 
 ** Adjusting font lock level
 set haskell-ts-font-lock-level accordingly.
+
+** Language server
+haskell-ts-mode is not compatiable with lsp-haskell. To enable eglot
+support, use the following function:
+#+begin_src: emacs-lisp
+(eval-when-load 'eglot (haskell-ts-setup-eglot))
+#+end_src
 
 * TODO and limitations
 - support for customization UI

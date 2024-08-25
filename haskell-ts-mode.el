@@ -378,9 +378,9 @@
   (get-buffer-process "*haskell*"))
 
 (defun haskell-ts-setup-eglot()
-  (require 'eglot)
-  (add-to-list 'eglot-server-programs
-	       '(haskell-ts-mode . ("haskell-language-server-wrapper" "--lsp"))))
+  (when (featurep 'eglot)
+   (add-to-list 'eglot-server-programs
+	       '(haskell-ts-mode . ("haskell-language-server-wrapper" "--lsp")))))
 
 (when (treesit-ready-p 'haskell)
   (add-to-list 'auto-mode-alist '("\\.hs\\'" . haskell-ts-mode)))
