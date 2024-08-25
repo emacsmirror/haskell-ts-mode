@@ -280,6 +280,13 @@
 	  (haskell-ts-defun-name node)
 	nil)))
 
+(defvar haskell-ts-mode-map
+  (let ((km (make-sparse-keymap)))
+    (define-key km (kbd "C-c C-c") 'haskell-ts-compile-region-and-go)
+    (define-key km (kbd "C-c C-r") 'haskell-ts-run-haskell)
+    km)
+  "Map for haskell-ts-mode")
+
 ;;;###autoload
 (define-derived-mode haskell-ts-mode prog-mode "haskell ts mode"
   "Major mode for Haskell files using tree-sitter."
@@ -369,9 +376,6 @@
 
 (defun haskell-ts-haskell-session ()
   (get-buffer-process "*haskell*"))
-
-(define-key haskell-ts-mode-map (kbd "C-c C-c") 'haskell-ts-compile-region-and-go)
-(define-key haskell-ts-mode-map (kbd "C-c C-r") 'haskell-ts-run-haskell)
 
 (defun haskell-ts-setup-eglot()
   (require 'eglot)
