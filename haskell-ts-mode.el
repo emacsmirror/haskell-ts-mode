@@ -5,7 +5,9 @@
 
 ;; Author: Pranshu Sharma <pranshusharma366 at gmail>
 ;; URL: https://codeberg.org/pranshu/haskell-ts-mode
-;; Keywords: tree-sitter, haskell, emacs
+;; Package-Requires: ((emacs "29.3"))
+;; Version: 1
+;; Keywords: languages, haskell
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -26,7 +28,8 @@
 
 ;;; Code:
 
-(eval-when-compile (require 'comint) (require 'treesit))
+(require 'comint)
+(require 'treesit)
 
 (declare-function treesit-parser-create "treesit.c")
 (declare-function treesit-induce-sparse-tree "treesit.c")
@@ -77,8 +80,7 @@
 	"(function (infix right_operand: (_) @haskell-ts-fontify-arg))"
 	"(generator . (_) @haskell-ts-fontify-arg)"
 	"(bind (as (variable) . (_) @haskell-ts-fontify-arg))"
-        "(patterns) @haskell-ts-fontify-arg"
-	)
+        "(patterns) @haskell-ts-fontify-arg")
        :language 'haskell
        :feature 'type
        `((type) @font-lock-type-face
@@ -226,8 +228,7 @@
 	   ((n-p-gp nil "signature" "foreign_import") grand-parent 3)
 	   
 	   ;; Backup
-	   (catch-all parent 2)
-	   ))))
+	   (catch-all parent 2)))))
 
 ;; Copied from haskell-tng-mode
 (defvar haskell-ts-mode-syntax-table
@@ -270,20 +271,25 @@
 	(seq-do
 	 (lambda (it) (modify-syntax-entry it ">" table))
 	 (string-to-list "\r\n\f\v"))
-
 	table))
 
 
+(defmacro haskell-ts-imenu-name-function (check-func)
+  `(lambda (node)
+      (if (funcall ,check-func node)
+	  (haskell-ts-defun-name node)
+	nil)))
+
 ;;;###autoload
 (define-derived-mode haskell-ts-mode prog-mode "haskell ts mode"
-  "major mode for Haskell files using tree-sitter"
+  "Major mode for Haskell files using tree-sitter."
   :syntax-table haskell-ts-mode-syntax-table
   :interactive t
   (unless (treesit-ready-p 'haskell)
     (error "Tree-sitter for Haskell is not available"))
   (treesit-parser-create 'haskell)
   (setq-local treesit-defun-type-regexp "\\(?:\\(?:function\\|struct\\)_definition\\)")
-  ;; Indent 
+  ;; Indent
   (and haskell-ts-use-indent
        (setq-local treesit-simple-indent-rules haskell-ts-indent-rules)
        (setq-local indent-tabs-mode nil))
@@ -304,17 +310,17 @@
 		     ,(haskell-ts-imenu-name-function 'haskell-ts-imenu-func-node-p))
 		("Signatures.." haskell-ts-imenu-sig-node-p nil
 		 ,(haskell-ts-imenu-name-function 'haskell-ts-imenu-sig-node-p))
-		("Data..." haskell_ts-imenu-data-type-p nil
+		("Data..." haskell-ts-imenu-data-type-p nil
 		 (lambda (node)
 		   (treesit-node-text (treesit-node-child node 1))))))
   ;; font-lock.
   (setq-local treesit-font-lock-level haskell-ts-font-lock-level)
   (setq-local treesit-font-lock-settings (haskell-ts-font-lock))
-  (setq-local treesit-font-lock-feature-list	
+  (setq-local treesit-font-lock-feature-list
 	      haskell-ts-font-lock-feature-list)
   (treesit-major-mode-setup))
 
-(defun haskell-ts-fontify-arg (node &optional override start end)
+(defun haskell-ts-fontify-arg (node &optional _ _ _)
   (if (string= "variable" (treesit-node-type node))
       (put-text-property
        (treesit-node-start node)
@@ -322,7 +328,7 @@
        'face font-lock-variable-name-face)
     (mapc 'haskell-ts-fontify-arg (treesit-node-children node))))
 
-(defun haskell-ts-fontify-type (node &optional override start end)
+(defun haskell-ts-fontify-type (node &optional _ _ _)
   (let ((last-child (treesit-node-child node -1)))
     (if (string= (treesit-node-type last-child) "function")
 	(haskell-ts-fontify-type last-child)
@@ -330,13 +336,6 @@
        (treesit-node-start last-child)
        (treesit-node-end last-child)
        'face font-lock-variable-name-face))))
-
-(defmacro haskell-ts-imenu-name-function (check-func)
-  `(lambda (node)
-    (let ((name (treesit-node-text node)))
-      (if (funcall ,check-func node)
-	  (haskell-ts-defun-name node)
-	nil))))
 
 (defun haskell-ts-imenu-node-p (regex node)
     (and (string-match-p regex (treesit-node-type node))
@@ -348,33 +347,35 @@
 (defun haskell-ts-imenu-sig-node-p (node)
   (haskell-ts-imenu-node-p "signature" node))
 
-(defun haskell_ts-imenu-data-type-p (node)
+(defun haskell-ts-imenu-data-type-p (node)
   (haskell-ts-imenu-node-p "data_type" node))
 
 (defun haskell-ts-defun-name (node)
   (treesit-node-text (treesit-node-child node 0)))
 
-(defun haskell-compile-region-and-go (start end)
-  "compile the current region in the haskell proc, and switch to its buffer."
+(defun haskell-ts-compile-region-and-go (start end)
+  "Compile the text from START to END in the haskell proc."
   (interactive "r")
-  (comint-send-region (haskellsession) start end)
-  (comint-send-string (haskellsession) "\n"))
+  (let ((hs (haskell-ts-haskell-session)))
+    (comint-send-region hs start end)
+    (comint-send-string hs "\n")))
 
-(defun run-haskell()
+(defun haskell-ts-run-haskell()
   (interactive)
   (when (not (comint-check-proc "*haskell*"))
     (set-buffer (apply (function make-comint)
 		       "haskell" "ghci" nil `(,buffer-file-name))))
   (pop-to-buffer-same-window "*haskell*"))
 
-(defun haskellsession ()
+(defun haskell-ts-haskell-session ()
   (get-buffer-process "*haskell*"))
 
-(define-key haskell-ts-mode-map (kbd "C-c c") 'haskell-compile-region-and-go)
-(define-key haskell-ts-mode-map (kbd "C-c r") 'run-haskell)
+(define-key haskell-ts-mode-map (kbd "C-c C-c") 'haskell-ts-compile-region-and-go)
+(define-key haskell-ts-mode-map (kbd "C-c C-r") 'haskell-ts-run-haskell)
 
-(with-eval-after-load 'eglot
-  (add-to-list 'eglot-server-programs 
+(defun haskell-ts-setup-eglot()
+  (require 'eglot)
+  (add-to-list 'eglot-server-programs
 	       '(haskell-ts-mode . ("haskell-language-server-wrapper" "--lsp"))))
 
 (when (treesit-ready-p 'haskell)
