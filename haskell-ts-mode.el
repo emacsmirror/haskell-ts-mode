@@ -230,7 +230,7 @@
 	   ;; Backup
 	   (catch-all parent 2)))))
 
-;; Copied from haskell-tng-mode
+;; Copied from haskell-tng-mode, changed a bit
 (defvar haskell-ts-mode-syntax-table
       (let ((table (make-syntax-table)))
 	(map-char-table
@@ -248,7 +248,7 @@
 	(seq-do
 	 (lambda (it) (modify-syntax-entry it "_" table))
 	 (string-to-list "!#$%&*+./<=>?\\^|-~:"))
-	(modify-syntax-entry ?_ "w" table)
+	(modify-syntax-entry ?_ "_" table)
 	;; some special (treated like punctuation)
 	(seq-do
 	 (lambda (it) (modify-syntax-entry it "." table))
