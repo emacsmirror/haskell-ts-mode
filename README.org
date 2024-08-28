@@ -1,5 +1,5 @@
 
-* Context
+* haskell-ts-mode
 
 A haskell mode that uses treesitter.
 
@@ -9,6 +9,12 @@ A haskell mode that uses treesitter.
 
 The above screenshot is indented coloured using haskell-ts-mode, with
 prettify-symbols-mode enabled.
+
+* Usage
+
+=C-c C-r= to open REPL
+=C-c C-c= to send code to repl
+=C-M-q=   Indent paragraph
 
 * Features
 an overview of the features are:

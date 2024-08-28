@@ -280,10 +280,20 @@
 	  (haskell-ts-defun-name node)
 	nil)))
 
+(defun haskell-ts-indent-para()
+  "Indent the current paragraph."
+  (interactive)
+  (save-excursion
+    (backward-paragraph)
+    (let ((p (point)))
+      (forward-paragraph)
+      (indent-region p (point)))))
+
 (defvar haskell-ts-mode-map
   (let ((km (make-sparse-keymap)))
     (define-key km (kbd "C-c C-c") 'haskell-ts-compile-region-and-go)
     (define-key km (kbd "C-c C-r") 'haskell-ts-run-haskell)
+    (define-key km (kbd "C-M-q") 'haskell-ts-indent-para)
     km)
   "Map for haskell-ts-mode")
 
