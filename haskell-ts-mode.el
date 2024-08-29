@@ -380,10 +380,9 @@
 
 (defun haskell-ts-run-haskell()
   (interactive)
-  (pop-to-buffer-same-window           ;really in the same window?
-   (or
-    (comint-check-proc "*haskell*")
-    (make-comint "*haskell* repl" "ghci" nil buffer-file-name)))
+  (when (not (comint-check-proc "*haskell*"))
+    (set-buffer (apply (function make-comint)
+                       "haskell" "ghci" nil `(,buffer-file-name))))
   (pop-to-buffer-same-window "*haskell*"))
 
 (defun haskell-ts-haskell-session ()
