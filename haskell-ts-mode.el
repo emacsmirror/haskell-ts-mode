@@ -23,7 +23,8 @@
 ;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-;; This is a WIP mode that uses treesitter to provide all the basic
+
+;; This is a major mode that uses treesitter to provide all the basic
 ;; major mode stuff, like indentation, font lock, etc...
 
 ;;; Code:
@@ -39,17 +40,22 @@
 (declare-function treesit-node-type "treesit.c")
 (declare-function treesit-search-subtree "treesit.c")
 
+(defgroup 'haskell-ts-mode nil
+  "Group that contains haskell-ts-mode variables")
+
 (defvar haskell-ts-font-lock-feature-list
   '((comment str pragma parens)
     (type definition function args)
     (match keyword)
     (otherwise signature)))
 
-(defvar haskell-ts-use-indent t
-  "Set to nil if you don't want to use Emacs indent.")
+(defcustom haskell-ts-use-indent t
+  "Set to non-nil to use the indentation provided by haskell-ts-mode"
+  :group 'haskell-ts-mode)
 
-(defvar haskell-ts-font-lock-level 4
-  "Level of font lock, 1 for minimum highlghting and 4 for maximum.")
+(defcustom haskell-ts-font-lock-level 4
+  "Level of font lock, 1 for minimum highlghting and 4 for maximum."
+  :group 'haskell-ts-mode)
 
 (defvar haskell-ts-prettify-symbols-alits
       '(("\\" . "λ")
@@ -61,6 +67,7 @@
 	(">=" . "≤")))
 
 (defun haskell-ts-font-lock ()
+  "A function that returns the treesit font lock lock settings for haskell."
     (treesit-font-lock-rules
        :language 'haskell
        :feature 'keyword
@@ -157,7 +164,6 @@
 	   ((parent-is "apply") parent -1)
 	   ((node-is "quasiquote") grand-parent 2)
 	   ((parent-is "quasiquote_body") (lambda (_ _ c) c) 0)
-	   ;; Do Hg
 	   ((lambda (node parent bol)
 	      (let ((n (treesit-node-prev-sibling node)))
 		(while (string= "comment" (treesit-node-type n))
@@ -241,16 +247,16 @@
                (modify-syntax-entry k "_" table))))
 	 (char-table-parent table))
 	;; whitechar
-	(seq-do
+	(mapc
 	 (lambda (it) (modify-syntax-entry it " " table))
 	 (string-to-list "\r\n\f\v \t"))
 	;; ascSymbol
-	(seq-do
+	(mapc
 	 (lambda (it) (modify-syntax-entry it "_" table))
 	 (string-to-list "!#$%&*+./<=>?\\^|-~:"))
 	(modify-syntax-entry ?_ "_" table)
 	;; some special (treated like punctuation)
-	(seq-do
+	(mapc
 	 (lambda (it) (modify-syntax-entry it "." table))
 	 (string-to-list ",;@"))
 	;; apostrophe as a word, not delimiter
@@ -268,7 +274,7 @@
 	(modify-syntax-entry ?\{  "(}1nb" table)
 	(modify-syntax-entry ?\}  "){4nb" table)
 	(modify-syntax-entry ?-  "_ 123" table) ;; TODO --> is not a comment
-	(seq-do
+	(mapc
 	 (lambda (it) (modify-syntax-entry it ">" table))
 	 (string-to-list "\r\n\f\v"))
 	table))
@@ -280,34 +286,29 @@
 	  (haskell-ts-defun-name node)
 	nil)))
 
-(defun haskell-ts-indent-para()
+(defun haskell-ts-indent-para ()
   "Indent the current paragraph."
   (interactive)
-  (save-excursion
-    (backward-paragraph)
-    (let ((p (point)))
-      (forward-paragraph)
-      (indent-region p (point)))))
+  (when-let ((par (bounds-of-thing-at-point 'paragraph)))
+    (indent-region (car par) (cdr par))))
 
 (defvar haskell-ts-mode-map
   (let ((km (make-sparse-keymap)))
     (define-key km (kbd "C-c C-c") 'haskell-ts-compile-region-and-go)
     (define-key km (kbd "C-c C-r") 'haskell-ts-run-haskell)
-    (define-key km (kbd "C-M-q") 'haskell-ts-indent-para)
+    (define-key km (kbd "C-M-q") 'haskell-ts-indent-para) ; For those who don't have emacs 30
     km)
-  "Map for haskell-ts-mode")
+  "Map for haskell-ts-mode.")
 
 ;;;###autoload
 (define-derived-mode haskell-ts-mode prog-mode "haskell ts mode"
   "Major mode for Haskell files using tree-sitter."
-  :syntax-table haskell-ts-mode-syntax-table
-  :interactive t
   (unless (treesit-ready-p 'haskell)
     (error "Tree-sitter for Haskell is not available"))
   (treesit-parser-create 'haskell)
   (setq-local treesit-defun-type-regexp "\\(?:\\(?:function\\|struct\\)_definition\\)")
   ;; Indent
-  (and haskell-ts-use-indent
+  (when haskell-ts-use-indent
        (setq-local treesit-simple-indent-rules haskell-ts-indent-rules)
        (setq-local indent-tabs-mode nil))
   ;; Comment
@@ -316,7 +317,7 @@
   (setq-local comment-start-skip "\\(?: \\|^\\)-+")
   ;; Elecric
   (setq-local electric-pair-pairs
-	      (list (cons ?` ?`) (cons ?\( ?\)) (cons ?{ ?}) (cons ?\" ?\") (cons ?\[ ?\])))
+	      '((cons ?` ?`) (cons ?\( ?\)) (cons ?{ ?}) (cons ?\" ?\") (cons ?\[ ?\])))
   ;; Nav
   (setq-local treesit-defun-name-function 'haskell-ts-defun-name)
   (setq-local treesit-defun-type-regexp "function")
@@ -324,13 +325,13 @@
   ;; Imenu
   (setq-local treesit-simple-imenu-settings
 	      `((nil haskell-ts-imenu-func-node-p nil
-		     ,(haskell-ts-imenu-name-function 'haskell-ts-imenu-func-node-p))
+		     ,(haskell-ts-imenu-name-function #'haskell-ts-imenu-func-node-p))
 		("Signatures.." haskell-ts-imenu-sig-node-p nil
-		 ,(haskell-ts-imenu-name-function 'haskell-ts-imenu-sig-node-p))
+		 ,(haskell-ts-imenu-name-function #'haskell-ts-imenu-sig-node-p))
 		("Data..." haskell-ts-imenu-data-type-p nil
 		 (lambda (node)
 		   (treesit-node-text (treesit-node-child node 1))))))
-  ;; font-lock.
+  ;; font-lock
   (setq-local treesit-font-lock-level haskell-ts-font-lock-level)
   (setq-local treesit-font-lock-settings (haskell-ts-font-lock))
   (setq-local treesit-font-lock-feature-list
@@ -379,18 +380,20 @@
 
 (defun haskell-ts-run-haskell()
   (interactive)
-  (when (not (comint-check-proc "*haskell*"))
-    (set-buffer (apply (function make-comint)
-		       "haskell" "ghci" nil `(,buffer-file-name))))
+  (pop-to-buffer-same-window           ;really in the same window?
+   (or
+    (comint-check-proc "*haskell*")
+    (make-comint "*haskell* repl" "ghci" nil buffer-file-name)))
   (pop-to-buffer-same-window "*haskell*"))
 
 (defun haskell-ts-haskell-session ()
   (get-buffer-process "*haskell*"))
 
+(defvar eglot-server-programs)
+
 (defun haskell-ts-setup-eglot()
-  (when (featurep 'eglot)
-   (add-to-list 'eglot-server-programs
-	       '(haskell-ts-mode . ("haskell-language-server-wrapper" "--lsp")))))
+  (add-to-list 'eglot-server-programs
+	       '(haskell-ts-mode . ("haskell-language-server-wrapper" "--lsp"))))
 
 (when (treesit-ready-p 'haskell)
   (add-to-list 'auto-mode-alist '("\\.hs\\'" . haskell-ts-mode)))
@@ -398,4 +401,3 @@
 (provide 'haskell-ts-mode)
 
 ;;; haskell-ts-mode.el ends here
-
