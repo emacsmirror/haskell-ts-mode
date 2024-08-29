@@ -314,7 +314,7 @@
     (setq-local indent-tabs-mode nil))
   ;; Comment
   (setq-local comment-start "-- ")
-  (setq-local comment-use-syntax nil)
+  (setq-local comment-use-syntax t)
   (setq-local comment-start-skip "\\(?: \\|^\\)-+")
   ;; Elecric
   (setq-local electric-pair-pairs
