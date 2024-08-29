@@ -58,146 +58,146 @@
   :group 'haskell-ts-mode)
 
 (defvar haskell-ts-prettify-symbols-alits
-      '(("\\" . "λ")
-	("/=" . "≠")
-	("->" . "→")
-	("=>" . "⇒")
-	("<-" . "←")
-	("<=" . "≥")
-	(">=" . "≤")))
+  '(("\\" . "λ")
+    ("/=" . "≠")
+    ("->" . "→")
+    ("=>" . "⇒")
+    ("<-" . "←")
+    ("<=" . "≥")
+    (">=" . "≤")))
 
 (defun haskell-ts-font-lock ()
   "A function that returns the treesit font lock lock settings for haskell."
-    (treesit-font-lock-rules
-       :language 'haskell
-       :feature 'keyword
-       `(["module" "import" "data" "let" "where" "case"
-	  "if" "then" "else" "of" "do" "in" "instance" "class"]
-	 @font-lock-keyword-face)
-       :language 'haskell
-       :feature 'otherwise
-       :override t
-       `(((match (guards guard: (boolean (variable) @font-lock-keyword-face)))
-	 (:match "otherwise" @font-lock-keyword-face)))
-       :language 'haskell
-       :feature 'args
-       :override 'keep
-       (concat
-	"(function (infix left_operand: (_) @haskell-ts-fontify-arg))"
-	"(function (infix right_operand: (_) @haskell-ts-fontify-arg))"
-	"(generator . (_) @haskell-ts-fontify-arg)"
-	"(bind (as (variable) . (_) @haskell-ts-fontify-arg))"
-        "(patterns) @haskell-ts-fontify-arg")
-       :language 'haskell
-       :feature 'type
-       `((type) @font-lock-type-face
-	 (constructor) @font-lock-type-face)
-       :language 'haskell
-       :override t
-       :feature 'signature
-       `((signature (function) @haskell-ts-fontify-type)
-	 (context (function) @haskell-ts-fontify-type))
-       :language 'haskell
-       :feature 'function
-       :override t
-       `((function name: (variable) @font-lock-function-name-face)
-	 (function (infix (operator)  @font-lock-function-name-face))
-	 (bind (variable) @font-lock-function-name-face)
-	 (function (infix (infix_id (variable) @font-lock-function-name-face)))
-	 (bind (as (variable) @font-lock-function-name-face)))
-       :language 'haskell
-       :feature 'match
-       `((match ("|" @font-lock-doc-face) ("=" @font-lock-doc-face))
-	 (list_comprehension ("|" @font-lock-doc-face
-			      (qualifiers (generator "<-" @font-lock-doc-face))))
-	 (match ("->" @font-lock-doc-face)))
-       :language 'haskell
-       :feature 'comment
-       `(((comment) @font-lock-comment-face)
-	 ((haddock) @font-lock-doc-face))
-       :language 'haskell
-       :feature 'pragma
-       `((pragma) @font-lock-preprocessor-face
-	 (cpp) @font-lock-preprocessor-face)
-       :language 'haskell
-       :feature 'str
-       :override t
-       `((char) @font-lock-string-face
-	 (string) @font-lock-string-face
-	 (quasiquote (quoter) @font-lock-type-face)
-	 (quasiquote (quasiquote_body) @font-lock-preprocessor-face))
-       :language 'haskell
-       :feature 'parens
-       :override t
-       `(["(" ")" "[" "]"] @font-lock-operator-face
-       (infix operator: (_) @font-lock-operator-face))))
+  (treesit-font-lock-rules
+   :language 'haskell
+   :feature 'keyword
+   `(["module" "import" "data" "let" "where" "case"
+      "if" "then" "else" "of" "do" "in" "instance" "class"]
+     @font-lock-keyword-face)
+   :language 'haskell
+   :feature 'otherwise
+   :override t
+   `(((match (guards guard: (boolean (variable) @font-lock-keyword-face)))
+      (:match "otherwise" @font-lock-keyword-face)))
+   :language 'haskell
+   :feature 'args
+   :override 'keep
+   (concat
+    "(function (infix left_operand: (_) @haskell-ts-fontify-arg))"
+    "(function (infix right_operand: (_) @haskell-ts-fontify-arg))"
+    "(generator . (_) @haskell-ts-fontify-arg)"
+    "(bind (as (variable) . (_) @haskell-ts-fontify-arg))"
+    "(patterns) @haskell-ts-fontify-arg")
+   :language 'haskell
+   :feature 'type
+   `((type) @font-lock-type-face
+     (constructor) @font-lock-type-face)
+   :language 'haskell
+   :override t
+   :feature 'signature
+   `((signature (function) @haskell-ts-fontify-type)
+     (context (function) @haskell-ts-fontify-type))
+   :language 'haskell
+   :feature 'function
+   :override t
+   `((function name: (variable) @font-lock-function-name-face)
+     (function (infix (operator)  @font-lock-function-name-face))
+     (bind (variable) @font-lock-function-name-face)
+     (function (infix (infix_id (variable) @font-lock-function-name-face)))
+     (bind (as (variable) @font-lock-function-name-face)))
+   :language 'haskell
+   :feature 'match
+   `((match ("|" @font-lock-doc-face) ("=" @font-lock-doc-face))
+     (list_comprehension ("|" @font-lock-doc-face
+			  (qualifiers (generator "<-" @font-lock-doc-face))))
+     (match ("->" @font-lock-doc-face)))
+   :language 'haskell
+   :feature 'comment
+   `(((comment) @font-lock-comment-face)
+     ((haddock) @font-lock-doc-face))
+   :language 'haskell
+   :feature 'pragma
+   `((pragma) @font-lock-preprocessor-face
+     (cpp) @font-lock-preprocessor-face)
+   :language 'haskell
+   :feature 'str
+   :override t
+   `((char) @font-lock-string-face
+     (string) @font-lock-string-face
+     (quasiquote (quoter) @font-lock-type-face)
+     (quasiquote (quasiquote_body) @font-lock-preprocessor-face))
+   :language 'haskell
+   :feature 'parens
+   :override t
+   `(["(" ")" "[" "]"] @font-lock-operator-face
+     (infix operator: (_) @font-lock-operator-face))))
 
 (defvar haskell-ts-indent-rules
-      (let ((p-prev-sib
-	     (lambda (node _ _)
-	       (let ((n (treesit-node-prev-sibling node)))
-		 (while (string= "comment" (treesit-node-type n))
-		   (setq n (treesit-node-prev-sibling n)))
-		 (treesit-node-start n)))))
-	`((haskell
-	   ((node-is "comment") column-0 0)
-	   ((node-is "cpp") column-0 0)
-	   ((parent-is "comment") column-0 0)
-	   ((parent-is "imports") column-0 0)
-	   ;; Infix
-	   ((parent-is "infix") standalone-parent 1)
-	   ((node-is "infix") standalone-parent 2)
-	   ;; Lambda
-	   ((parent-is "lambda") standalone-parent 2)
+  (let ((p-prev-sib
+	 (lambda (node _ _)
+	   (let ((n (treesit-node-prev-sibling node)))
+	     (while (string= "comment" (treesit-node-type n))
+	       (setq n (treesit-node-prev-sibling n)))
+	     (treesit-node-start n)))))
+    `((haskell
+       ((node-is "comment") column-0 0)
+       ((node-is "cpp") column-0 0)
+       ((parent-is "comment") column-0 0)
+       ((parent-is "imports") column-0 0)
+       ;; Infix
+       ((parent-is "infix") standalone-parent 1)
+       ((node-is "infix") standalone-parent 2)
+       ;; Lambda
+       ((parent-is "lambda") standalone-parent 2)
 
-	   ;; in
-	   ((node-is "^in$") parent 0)
-	   
-	   ;; list
-	   ((node-is "]") parent 0)
-	   ((parent-is "list") parent 1)
-	   
-	   ;; If then else
-	   ((node-is "then") parent 2)
-	   ((node-is "^else$") parent 2)
+       ;; in
+       ((node-is "^in$") parent 0)
+       
+       ;; list
+       ((node-is "]") parent 0)
+       ((parent-is "list") parent 1)
+       
+       ;; If then else
+       ((node-is "then") parent 2)
+       ((node-is "^else$") parent 2)
 
-	   ((parent-is "apply") parent -1)
-	   ((node-is "quasiquote") grand-parent 2)
-	   ((parent-is "quasiquote_body") (lambda (_ _ c) c) 0)
-	   ((lambda (node parent bol)
-	      (let ((n (treesit-node-prev-sibling node)))
-		(while (string= "comment" (treesit-node-type n))
-		   (setq n (treesit-node-prev-sibling n)))
-		 (string= "do" (treesit-node-type n))))
-	    standalone-parent 3)
-	   ((parent-is "do") ,p-prev-sib 0)
+       ((parent-is "apply") parent -1)
+       ((node-is "quasiquote") grand-parent 2)
+       ((parent-is "quasiquote_body") (lambda (_ _ c) c) 0)
+       ((lambda (node parent bol)
+	  (let ((n (treesit-node-prev-sibling node)))
+	    (while (string= "comment" (treesit-node-type n))
+	      (setq n (treesit-node-prev-sibling n)))
+	    (string= "do" (treesit-node-type n))))
+	standalone-parent 3)
+       ((parent-is "do") ,p-prev-sib 0)
 
-	   ((node-is "alternatives")
-	    (lambda (_ b _)
-	      (treesit-node-start (treesit-node-child b 0)))
-	   4)
-	   ((parent-is "alternatives") ,p-prev-sib 0)
+       ((node-is "alternatives")
+	(lambda (_ b _)
+	  (treesit-node-start (treesit-node-child b 0)))
+	4)
+       ((parent-is "alternatives") ,p-prev-sib 0)
 
-	   (no-node prev-adaptive-prefix 0)
-	   
-	   ((parent-is "data_constructors") parent 0)
+       (no-node prev-adaptive-prefix 0)
+       
+       ((parent-is "data_constructors") parent 0)
 
-	   ;; where
-	   ((lambda (node _ _)
-	      (let ((n (treesit-node-prev-sibling node)))
-		 (while (string= "comment" (treesit-node-type n))
-		   (setq n (treesit-node-prev-sibling n)))
-		 (string= "where" (treesit-node-type n))))
-	    (lambda (_ b _)
-	      (+ 1 (treesit-node-start (treesit-node-prev-sibling b))))
-	    3)
-	   ((parent-is "local_binds\\|instance_declarations") ,p-prev-sib 0)
-	   ((node-is "^where$") parent 2)
-	   
-	   ;; Match
-	   ;; ((match "match" nil 2 2 nil) ,p-prev-sib 0)
-	   ((lambda (node _ _)
-	      (and (string= (treesit-node-type node) "match")
+       ;; where
+       ((lambda (node _ _)
+	  (let ((n (treesit-node-prev-sibling node)))
+	    (while (string= "comment" (treesit-node-type n))
+	      (setq n (treesit-node-prev-sibling n)))
+	    (string= "where" (treesit-node-type n))))
+	(lambda (_ b _)
+	  (+ 1 (treesit-node-start (treesit-node-prev-sibling b))))
+	3)
+       ((parent-is "local_binds\\|instance_declarations") ,p-prev-sib 0)
+       ((node-is "^where$") parent 2)
+       
+       ;; Match
+       ;; ((match "match" nil 2 2 nil) ,p-prev-sib 0)
+       ((lambda (node _ _)
+	  (and (string= (treesit-node-type node) "match")
 	       (let ((pos 3)
 		     (n node)
 		     (ch (lambda () )))
@@ -207,10 +207,10 @@
 		   (unless (string= "comment" (treesit-node-type n))
 		     (setq pos (- pos 1))))
 		 (and (null n) (eq pos 0)))))
-	    parent 2)
-	   ;; ((match "match" nil nil 3 nil) ,p-prev-sib 0)
-	   ((lambda (node _ _)
-	      (and (string= (treesit-node-type node) "match")
+	parent 2)
+       ;; ((match "match" nil nil 3 nil) ,p-prev-sib 0)
+       ((lambda (node _ _)
+	  (and (string= (treesit-node-type node) "match")
 	       (let ((pos 4)
 		     (n node)
 		     (ch (lambda () )))
@@ -220,71 +220,71 @@
 		   (unless (string= "comment" (treesit-node-type n))
 		     (setq pos (- pos 1))))
 		 (eq pos 0))))
-	    ,p-prev-sib 0)
-	   ((parent-is "match") standalone-parent 2)
-	   
-	   ((parent-is "haskell") column-0 0)
-	   ((parent-is "declarations") column-0 0)
+	,p-prev-sib 0)
+       ((parent-is "match") standalone-parent 2)
+       
+       ((parent-is "haskell") column-0 0)
+       ((parent-is "declarations") column-0 0)
 
-	   ((parent-is "record") grand-parent 0)
+       ((parent-is "record") grand-parent 0)
 
-	   ((parent-is "exports")
-	    (lambda (_ b _) (treesit-node-start (treesit-node-prev-sibling b)))
-	    0)
-	   ((n-p-gp nil "signature" "foreign_import") grand-parent 3)
-	   
-	   ;; Backup
-	   (catch-all parent 2)))))
+       ((parent-is "exports")
+	(lambda (_ b _) (treesit-node-start (treesit-node-prev-sibling b)))
+	0)
+       ((n-p-gp nil "signature" "foreign_import") grand-parent 3)
+       
+       ;; Backup
+       (catch-all parent 2)))))
 
 ;; Copied from haskell-tng-mode, changed a bit
 (defvar haskell-ts-mode-syntax-table
-      (let ((table (make-syntax-table)))
-	(map-char-table
-	 (lambda (k v)
-	   ;; reset the (surprisingly numerous) defaults
-	   (let ((class (syntax-class v)))
-             (when (seq-contains-p '(1 4 5 6 9) class)
-               (modify-syntax-entry k "_" table))))
-	 (char-table-parent table))
-	;; whitechar
-	(mapc
-	 (lambda (it) (modify-syntax-entry it " " table))
-	 (string-to-list "\r\n\f\v \t"))
-	;; ascSymbol
-	(mapc
-	 (lambda (it) (modify-syntax-entry it "_" table))
-	 (string-to-list "!#$%&*+./<=>?\\^|-~:"))
-	(modify-syntax-entry ?_ "_" table)
-	;; some special (treated like punctuation)
-	(mapc
-	 (lambda (it) (modify-syntax-entry it "." table))
-	 (string-to-list ",;@"))
-	;; apostrophe as a word, not delimiter
-	(modify-syntax-entry ?\' "w" table)
-	;; string delimiter
-	(modify-syntax-entry ?\" "\"" table)
-	;; parens and pairs (infix functions)
-	(modify-syntax-entry ?\( "()" table)
-	(modify-syntax-entry ?\) ")(" table)
-	(modify-syntax-entry ?\[ "(]" table)
-	(modify-syntax-entry ?\] ")[" table)
-	(modify-syntax-entry ?\` "$`" table)
+  (let ((table (make-syntax-table)))
+    (map-char-table
+     (lambda (k v)
+       ;; reset the (surprisingly numerous) defaults
+       (let ((class (syntax-class v)))
+         (when (seq-contains-p '(1 4 5 6 9) class)
+           (modify-syntax-entry k "_" table))))
+     (char-table-parent table))
+    ;; whitechar
+    (mapc
+     (lambda (it) (modify-syntax-entry it " " table))
+     (string-to-list "\r\n\f\v \t"))
+    ;; ascSymbol
+    (mapc
+     (lambda (it) (modify-syntax-entry it "_" table))
+     (string-to-list "!#$%&*+./<=>?\\^|-~:"))
+    (modify-syntax-entry ?_ "_" table)
+    ;; some special (treated like punctuation)
+    (mapc
+     (lambda (it) (modify-syntax-entry it "." table))
+     (string-to-list ",;@"))
+    ;; apostrophe as a word, not delimiter
+    (modify-syntax-entry ?\' "w" table)
+    ;; string delimiter
+    (modify-syntax-entry ?\" "\"" table)
+    ;; parens and pairs (infix functions)
+    (modify-syntax-entry ?\( "()" table)
+    (modify-syntax-entry ?\) ")(" table)
+    (modify-syntax-entry ?\[ "(]" table)
+    (modify-syntax-entry ?\] ")[" table)
+    (modify-syntax-entry ?\` "$`" table)
 
-	;; comments (subsuming pragmas)
-	(modify-syntax-entry ?\{  "(}1nb" table)
-	(modify-syntax-entry ?\}  "){4nb" table)
-	(modify-syntax-entry ?-  "_ 123" table) ;; TODO --> is not a comment
-	(mapc
-	 (lambda (it) (modify-syntax-entry it ">" table))
-	 (string-to-list "\r\n\f\v"))
-	table))
+    ;; comments (subsuming pragmas)
+    (modify-syntax-entry ?\{  "(}1nb" table)
+    (modify-syntax-entry ?\}  "){4nb" table)
+    (modify-syntax-entry ?-  "_ 123" table) ;; TODO --> is not a comment
+    (mapc
+     (lambda (it) (modify-syntax-entry it ">" table))
+     (string-to-list "\r\n\f\v"))
+    table))
 
 
 (defmacro haskell-ts-imenu-name-function (check-func)
   `(lambda (node)
-      (if (funcall ,check-func node)
-	  (haskell-ts-defun-name node)
-	nil)))
+     (if (funcall ,check-func node)
+	 (haskell-ts-defun-name node)
+       nil)))
 
 (defun haskell-ts-indent-para ()
   "Indent the current paragraph."
@@ -309,15 +309,15 @@
   (setq-local treesit-defun-type-regexp "\\(?:\\(?:function\\|struct\\)_definition\\)")
   ;; Indent
   (when haskell-ts-use-indent
-       (setq-local treesit-simple-indent-rules haskell-ts-indent-rules)
-       (setq-local indent-tabs-mode nil))
+    (setq-local treesit-simple-indent-rules haskell-ts-indent-rules)
+    (setq-local indent-tabs-mode nil))
   ;; Comment
   (setq-local comment-start "-- ")
   (setq-local comment-use-syntax nil)
   (setq-local comment-start-skip "\\(?: \\|^\\)-+")
   ;; Elecric
   (setq-local electric-pair-pairs
-	      '((cons ?` ?`) (cons ?\( ?\)) (cons ?{ ?}) (cons ?\" ?\") (cons ?\[ ?\])))
+	      '((?` . ?`) (?\( . ?\)) (?{ . ?}) (?\" . ?\") (?\[ . ?\])))
   ;; Nav
   (setq-local treesit-defun-name-function 'haskell-ts-defun-name)
   (setq-local treesit-defun-type-regexp "function")
@@ -356,8 +356,8 @@
        'face font-lock-variable-name-face))))
 
 (defun haskell-ts-imenu-node-p (regex node)
-    (and (string-match-p regex (treesit-node-type node))
-	 (string= (treesit-node-type (treesit-node-parent node)) "declarations")))
+  (and (string-match-p regex (treesit-node-type node))
+       (string= (treesit-node-type (treesit-node-parent node)) "declarations")))
 
 (defun haskell-ts-imenu-func-node-p (node)
   (haskell-ts-imenu-node-p "function\\|bind" node))
