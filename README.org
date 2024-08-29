@@ -96,7 +96,7 @@ set haskell-ts-font-lock-level accordingly.
 haskell-ts-mode is not compatiable with lsp-haskell. To enable eglot
 support, use the following function:
 #+begin_src: emacs-lisp
-(eval-when-load 'eglot (haskell-ts-setup-eglot))
+(with-eval-after-load 'eglot (haskell-ts-setup-eglot))
 #+end_src
 
 * TODO and limitations
