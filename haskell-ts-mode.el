@@ -40,7 +40,7 @@
 (declare-function treesit-node-type "treesit.c")
 (declare-function treesit-search-subtree "treesit.c")
 
-(defgroup 'haskell-ts-mode nil
+(defgroup haskell-ts-mode nil
   "Group that contains haskell-ts-mode variables")
 
 (defvar haskell-ts-font-lock-feature-list
