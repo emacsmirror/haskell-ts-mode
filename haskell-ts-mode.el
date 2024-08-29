@@ -71,7 +71,7 @@
   (treesit-font-lock-rules
    :language 'haskell
    :feature 'keyword
-   `(["module" "import" "data" "let" "where" "case"
+   `(["module" "import" "data" "let" "where" "case" "type"
       "if" "then" "else" "of" "do" "in" "instance" "class"]
      @font-lock-keyword-face)
    :language 'haskell
@@ -102,6 +102,7 @@
    :override t
    `((function name: (variable) @font-lock-function-name-face)
      (function (infix (operator)  @font-lock-function-name-face))
+     (declarations (type_synomym (name) @font-lock-function-name-face))
      (bind (variable) @font-lock-function-name-face)
      (function (infix (infix_id (variable) @font-lock-function-name-face)))
      (bind (as (variable) @font-lock-function-name-face)))
@@ -273,7 +274,7 @@
     ;; comments (subsuming pragmas)
     (modify-syntax-entry ?\{  "(}1nb" table)
     (modify-syntax-entry ?\}  "){4nb" table)
-    (modify-syntax-entry ?-  "_ 123" table) ;; TODO --> is not a comment
+    (modify-syntax-entry ?-  "_ 123" table)
     (mapc
      (lambda (it) (modify-syntax-entry it ">" table))
      (string-to-list "\r\n\f\v"))
