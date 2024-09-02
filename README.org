@@ -100,7 +100,6 @@ support, use the following function:
 #+end_src
 
 * TODO and limitations
-- support for customization UI
 - Imenu support for functions with multiple definitions
 
 Limitations: _Proper indenting of multiline signatures_: the
