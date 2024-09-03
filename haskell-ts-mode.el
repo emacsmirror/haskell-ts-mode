@@ -287,17 +287,21 @@
 	 (haskell-ts-defun-name node)
        nil)))
 
-(defun haskell-ts-indent-para ()
-  "Indent the current paragraph."
-  (interactive)
-  (when-let ((par (bounds-of-thing-at-point 'paragraph)))
-    (indent-region (car par) (cdr par))))
+(defun haskell-ts-indent-defun (pos)
+  "Indent the current function."
+  (interactive "d")
+  (let ((node (treesit-node-at pos)))
+    (while (not (string-match
+		 "declarations\\|haskell"
+		 (treesit-node-type (treesit-node-parent node))))
+      (setq node (treesit-node-parent node)))
+    (indent-region (treesit-node-start node) (treesit-node-end node))))
 
 (defvar haskell-ts-mode-map
   (let ((km (make-sparse-keymap)))
     (define-key km (kbd "C-c C-c") 'haskell-ts-compile-region-and-go)
     (define-key km (kbd "C-c C-r") 'haskell-ts-run-haskell)
-    (define-key km (kbd "C-M-q") 'haskell-ts-indent-para) ; For those who don't have emacs 30
+    (define-key km (kbd "C-M-q") 'haskell-ts-indent-defun) ; For those who don't have emacs 30
     km)
   "Map for haskell-ts-mode.")
 
