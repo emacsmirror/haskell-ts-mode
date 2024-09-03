@@ -146,8 +146,8 @@
        ((parent-is "comment") column-0 0)
        ((parent-is "imports") column-0 0)
        ;; Infix
-       ((parent-is "infix") standalone-parent 1)
-       ((node-is "infix") standalone-parent 2)
+       ((node-is "infix") standalone-parent 1)
+       ((parent-is "infix") grand-parent 0)
        ;; Lambda
        ((parent-is "lambda") standalone-parent 2)
 
