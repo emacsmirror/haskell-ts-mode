@@ -63,6 +63,9 @@ implement indentation, so I thought why not use tree sitter?
 
 * Installation
 
+The package is avaiable on elpa, you can install it using:
+M-x package-install RET haskell-ts-mode RET
+
 #+BEGIN_SRC: elisp
 (add-to-list 'load-path "path/to/haskell-ts-mode")
 (require 'haskell-ts-mode)
