@@ -41,7 +41,8 @@
 (declare-function treesit-search-subtree "treesit.c")
 
 (defgroup haskell-ts-mode nil
-  "Group that contains haskell-ts-mode variables")
+  "Group that contains haskell-ts-mode variables"
+  :group 'langs)
 
 (defvar haskell-ts-font-lock-feature-list
   '((comment str pragma parens)
@@ -51,11 +52,13 @@
 
 (defcustom haskell-ts-use-indent t
   "Set to non-nil to use the indentation provided by haskell-ts-mode"
-  :group 'haskell-ts-mode)
+  :group 'haskell-ts-mode
+  :type 'bool)
 
 (defcustom haskell-ts-font-lock-level 4
   "Level of font lock, 1 for minimum highlghting and 4 for maximum."
-  :group 'haskell-ts-mode)
+  :group 'haskell-ts-mode
+  :type 'integer)
 
 (defvar haskell-ts-prettify-symbols-alits
   '(("\\" . "λ")
@@ -133,7 +136,7 @@
    `(["(" ")" "[" "]"] @font-lock-operator-face
      (infix operator: (_) @font-lock-operator-face))))
 
-(defvar haskell-ts-indent-rules
+(setq haskell-ts-indent-rules
   (let ((p-prev-sib
 	 (lambda (node _ _)
 	   (let ((n (treesit-node-prev-sibling node)))
@@ -141,7 +144,7 @@
 	       (setq n (treesit-node-prev-sibling n)))
 	     (treesit-node-start n)))))
     `((haskell
-       ((node-is "comment") column-0 0)
+       ((node-is "comment") prev-sibling 0)
        ((node-is "cpp") column-0 0)
        ((parent-is "comment") column-0 0)
        ((parent-is "imports") column-0 0)
